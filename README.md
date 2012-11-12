@@ -1,6 +1,4 @@
-# Runivedo
-
-TODO: Write a gem description
+# Runivedo - Univedo Ruby Binding 
 
 ## Installation
 
@@ -18,7 +16,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+
 
 ## Contributing
 
