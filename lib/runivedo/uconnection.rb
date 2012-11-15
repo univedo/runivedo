@@ -2,31 +2,31 @@ require "em-ws-client"
 
 module Runivedo
   class UConnection
-    def initialize(host, args = {})
+    def initialize(url)
       @messages = Queue.new
       @send_buffer = ""
-      @receive_buffer = nil
-      return unless host
+      @receive_buffer = ""
+      return unless url
       m = Mutex.new
       c = ConditionVariable.new
       Thread.new do
         EM.run do
-          ws = EM::WebSocketClient.new(host)
+          @ws = EM::WebSocketClient.new(url)
 
-          ws.onopen do
+          @ws.onopen do
             puts "connected"
             m.synchronize { c.signal }
           end
 
-          ws.onclose do |code, explain|
+          @ws.onclose do |code, explain|
             puts "closed: #{code}, #{explain}"
           end
 
-          ws.onerror do |code, message|
+          @ws.onerror do |code, message|
             puts "error: #{code}, #{message}"
           end
 
-          ws.onmessage do |msg, binary|
+          @ws.onmessage do |msg, binary|
             throw "non-binary received" unless binary
             @messages << msg
           end
@@ -39,8 +39,13 @@ module Runivedo
       send_buffer += send_impl(obj)
     end
 
+    def end_frame
+      @ws.send_data(@send_buffer)
+      @send_buffer = ""
+    end
+
     def receive()
-      @receive_buffer = @messages.pop unless @receive_buffer
+      @receive_buffer = @messages.pop if @receive_buffer.size == 0
       type = get_bytes(1, "C")
       case type
       when 0
