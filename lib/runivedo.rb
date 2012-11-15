@@ -1,7 +1,4 @@
-require "runivedo/version"
+require "runivedo/runivedo"
 
 module Runivedo
-  class UVariant
-
-  end
 end
