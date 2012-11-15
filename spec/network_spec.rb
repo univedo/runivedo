@@ -62,4 +62,35 @@ describe Runivedo::UConnection do
       connection.receive.should == "foobar"
     end
   end
+
+  describe "sending and receiving" do
+    let(:connection) { Runivedo::UConnection.new(nil) }
+
+    it "works for null" do
+      connection.instance_variable_set(:@receive_buffer, connection.send(:send_impl, nil))
+      connection.receive.should == nil
+    end
+
+    it "works for bools" do
+      connection.instance_variable_set(:@receive_buffer, connection.send(:send_impl, true))
+      connection.receive.should == true
+      connection.instance_variable_set(:@receive_buffer, connection.send(:send_impl, false))
+      connection.receive.should == false
+    end
+
+    it "works for ints" do
+      connection.instance_variable_set(:@receive_buffer, connection.send(:send_impl, 42))
+      connection.receive.should == 42
+    end
+
+    it "works for floats" do
+      connection.instance_variable_set(:@receive_buffer, connection.send(:send_impl, 42.23))
+      connection.receive.should == 42.23
+    end
+
+    it "works for strings" do
+      connection.instance_variable_set(:@receive_buffer, connection.send(:send_impl, "foobar"))
+      connection.receive.should == "foobar"
+    end
+  end
 end
