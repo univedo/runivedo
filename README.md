@@ -14,8 +14,7 @@ gem 'runivedo'
 connection = Runivedo.new(host: "univedo://hostname.com/bucket",
                           user: "username",
                           password: "secret",
-                          uts: File.open("univedo.uts"))
-
+                          uts: IO.read("univedo.uts"))
 connection.prepare("SELECT f1, f2 FROM tbl WHERE name = :name")
 connection.bind(:name, "foobar")
 result = connection.execute
