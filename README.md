@@ -16,10 +16,10 @@ Add this line to your application's Gemfile:
                               password: "secret",
                               uts: File.open("univedo.uts"))
     
-    connection.prepare("SELECT * FROM tbl WHERE name = :name")
+    connection.prepare("SELECT f1, f2 FROM tbl WHERE name = :name")
     connection.bind(:name, "foobar")
     result = connection.execute
-    result.each do { |r| puts r[0], r[1] }
+    result.each do { |r| puts r[:f1], r[:f2] }
 ```
 
 ## Contributing
