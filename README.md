@@ -18,7 +18,7 @@ connection = Runivedo.new(host: "univedo://hostname.com/bucket",
 connection.prepare("SELECT f1, f2 FROM tbl WHERE name = :name")
 connection.bind(:name, "foobar")
 result = connection.execute
-result.each do { |r| puts "f1: #{r[:f1]}, f2: #{r[:f2]} }
+result.each { |r| puts "f1: #{r[:f1]}, f2: #{r[:f2]} }
 ```
 
 ## Contributing
