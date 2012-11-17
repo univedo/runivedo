@@ -4,10 +4,13 @@
 
 Add this line to your application's Gemfile:
 
+```ruby
     gem 'runivedo'
+```
 
 ## Usage
 
+```ruby
     connection = Runivedo.new(host: "univedo://hostname.com/bucket",
                               user: "username",
                               password: "secret",
@@ -17,6 +20,7 @@ Add this line to your application's Gemfile:
     connection.bind(:name, "foobar")
     result = connection.execute
     result.each do { |r| puts r[0], r[1] }
+```
 
 ## Contributing
 
