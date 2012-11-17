@@ -6,17 +6,17 @@ Add this line to your application's Gemfile:
 
     gem 'runivedo'
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install runivedo
-
 ## Usage
 
-
+    connection = Runivedo.new(host: "univedo://hostname.com/bucket",
+                              user: "username",
+                              password: "secret",
+                              uts: File.open("univedo.uts"))
+    
+    connection.prepare("SELECT * FROM tbl WHERE name = :name")
+    connection.bind(:name, "foobar")
+    result = connection.execute
+    result.each do { |r| puts r[0], r[1] }
 
 ## Contributing
 
