@@ -19,7 +19,7 @@ Add this line to your application's Gemfile:
     connection.prepare("SELECT f1, f2 FROM tbl WHERE name = :name")
     connection.bind(:name, "foobar")
     result = connection.execute
-    result.each do { |r| puts r[:f1], r[:f2] }
+    result.each do { |r| puts "f1: #{r[:f1]}, f2: #{r[:f2]} }
 ```
 
 ## Contributing
