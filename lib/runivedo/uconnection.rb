@@ -1,5 +1,4 @@
 require "em-ws-client"
-require 'debugger'
 
 module Runivedo
   class UConnection
