@@ -6,5 +6,4 @@ connection = Runivedo::UConnection.new("ws://localhost:1600/6610CE92-9AF1-4D3F-A
 
 connection.send_obj "hallo"
 connection.end_frame
-puts "sent"
 puts connection.receive
