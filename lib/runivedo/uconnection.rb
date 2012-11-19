@@ -61,7 +61,7 @@ module Runivedo
     private
 
     def get_bytes(count, pack_opts)
-      if @receive_buffer.size < count
+      while @receive_buffer.size < count
         data, binary = @ws.receive
         raise "connection closed" if data.nil?
         raise "non-binary received" unless binary
