@@ -1,4 +1,5 @@
 require "em-ws-client"
+require 'debugger'
 
 module Runivedo
   class UConnection
@@ -15,15 +16,17 @@ module Runivedo
 
           @ws.onopen do
             puts "connected"
-            m.synchronize { c.signal }
+            m.synchronize { c.broadcast }
           end
 
           @ws.onclose do |code, explain|
             puts "closed: #{code}, #{explain}"
+            m.synchronize { c.broadcast }
           end
 
           @ws.onerror do |code, message|
             puts "error: #{code}, #{message}"
+            m.synchronize { c.broadcast }
           end
 
           @ws.onmessage do |msg, binary|
@@ -36,12 +39,11 @@ module Runivedo
     end
 
     def send_obj(obj)
-      send_buffer += send_impl(obj)
+      @send_buffer += send_impl(obj)
     end
 
     def end_frame
-      @ws.send_data(@send_buffer)
-      @send_buffer = ""
+      EM.next_tick { @ws.send_message(@send_buffer, true); @send_buffer = ""; puts "sent" }
     end
 
     def receive()
