@@ -6,7 +6,7 @@ module Runivedo
       @send_buffer = ""
       @receive_buffer = ""
       return unless url
-      @ws = RfcWebsocket::Websocket.new(url)
+      @ws = RfcWebSocket::WebSocket.new(url)
     end
 
     def send_obj(obj)
