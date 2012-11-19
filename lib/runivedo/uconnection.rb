@@ -1,40 +1,12 @@
-require "em-ws-client"
+require "rfc-ws-client"
 
 module Runivedo
   class UConnection
     def initialize(url)
-      @messages = Queue.new
       @send_buffer = ""
       @receive_buffer = ""
       return unless url
-      m = Mutex.new
-      c = ConditionVariable.new
-      Thread.new do
-        EM.run do
-          @ws = EM::WebSocketClient.new(url)
-
-          @ws.onopen do
-            puts "connected"
-            m.synchronize { c.broadcast }
-          end
-
-          @ws.onclose do |code, explain|
-            puts "closed: #{code}, #{explain}"
-            m.synchronize { c.broadcast }
-          end
-
-          @ws.onerror do |code, message|
-            puts "error: #{code}, #{message}"
-            m.synchronize { c.broadcast }
-          end
-
-          @ws.onmessage do |msg, binary|
-            throw "non-binary received" unless binary
-            @messages << msg
-          end
-        end
-      end
-      m.synchronize { c.wait(m) }
+      @ws = RfcWebsocket::Websocket.new(url)
     end
 
     def send_obj(obj)
@@ -42,11 +14,11 @@ module Runivedo
     end
 
     def end_frame
-      EM.next_tick { @ws.send_message(@send_buffer, true); @send_buffer = ""; puts "sent" }
+      @ws.send_message(@send_buffer, binary: true)
+      @send_buffer = ""
     end
 
     def receive()
-      @receive_buffer = @messages.pop if @receive_buffer.size == 0
       type = get_bytes(1, "C")
       case type
       when 0
@@ -89,6 +61,12 @@ module Runivedo
     private
 
     def get_bytes(count, pack_opts)
+      if @receive_buffer.size < count
+        data, binary = @ws.receive
+        raise "connection closed" if data.nil?
+        raise "non-binary received" unless binary
+        @receive_buffer << data
+      end
       @receive_buffer.slice!(0, count).unpack(pack_opts)[0]
     end
 
