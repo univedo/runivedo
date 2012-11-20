@@ -2,10 +2,10 @@ require "rfc-ws-client"
 
 module Runivedo
   class UConnection
-    def initialize(ws)
+    def initialize(url)
       @send_buffer = ""
       @receive_buffer = ""
-      @ws = ws
+      @ws = RfcWebSocket::WebSocket.new(url) if url
     end
 
     def send_obj(obj)
