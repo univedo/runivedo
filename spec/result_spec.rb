@@ -64,5 +64,18 @@ describe Runivedo::UResult do
       r.next_row.should be_nil
       r.complete.should be_true
     end
+
+    it "receives one result in enumerator" do
+      connection.recv_data << 0
+      connection.recv_data << 0
+      connection.recv_data << 2
+      connection.recv_data << "foo"
+      connection.recv_data << "bar"
+      connection.recv_data << 1
+      r = Runivedo::UResult.new(connection, nil)
+      r.each { |r| r.should == ["foo", "bar"] }
+      r.next_row.should be_nil
+      r.complete.should be_true
+    end
   end
 end
