@@ -25,5 +25,44 @@ describe Runivedo::UResult do
       r = Runivedo::UResult.new(connection, nil)
       expect { r.run }.to raise_error("invalid question")
     end
+
+    it "receives zero results" do
+      connection.recv_data << 0
+      connection.recv_data << 1
+      r = Runivedo::UResult.new(connection, nil)
+      r.next_row.should be_nil
+      r.complete.should be_true
+    end
+
+    it "receives one result" do
+      connection.recv_data << 0
+      connection.recv_data << 0
+      connection.recv_data << 2
+      connection.recv_data << "foo"
+      connection.recv_data << "bar"
+      connection.recv_data << 1
+      r = Runivedo::UResult.new(connection, nil)
+      r.next_row.should == ["foo", "bar"]
+      r.next_row.should be_nil
+      r.complete.should be_true
+    end
+
+    it "receives multiple results" do
+      connection.recv_data << 0
+      connection.recv_data << 0
+      connection.recv_data << 2
+      connection.recv_data << "foo"
+      connection.recv_data << "bar"
+      connection.recv_data << 0
+      connection.recv_data << 2
+      connection.recv_data << "fu"
+      connection.recv_data << "baz"
+      connection.recv_data << 1
+      r = Runivedo::UResult.new(connection, nil)
+      r.next_row.should == ["foo", "bar"]
+      r.next_row.should == ["fu", "baz"]
+      r.next_row.should be_nil
+      r.complete.should be_true
+    end
   end
 end

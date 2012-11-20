@@ -9,9 +9,11 @@ module Runivedo
       @query = query
       @affected_rows = nil
       @complete = false
+      @run = false
     end
 
     def run
+      @run = true
       @connection.send_obj(@query)
       status = @connection.receive
       raise "protocol error" unless status.is_a?(Fixnum)
@@ -31,8 +33,10 @@ module Runivedo
     end
 
     def next_row
+      run unless @run
       return nil if @complete
       status = @connection.receive
+      raise "protocol error" unless status.is_a?(Fixnum)
       case status
       when 0
         cols_count = @connection.receive
