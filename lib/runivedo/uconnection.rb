@@ -57,6 +57,10 @@ module Runivedo
       end
     end
 
+    def close
+      @ws.close
+    end
+
     private
 
     def get_bytes(count, pack_opts)
