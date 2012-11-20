@@ -8,8 +8,7 @@ Gem::Specification.new do |gem|
   gem.version       = Runivedo::VERSION
   gem.authors       = ["Lucas Clemente"]
   gem.email         = ["lucas.clemente@univedo.de"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.summary       = %q{Ruby binding for Univedo}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($/)

@@ -1,4 +1,4 @@
+require "runivedo/version"
 require "runivedo/runivedo"
-
-module Runivedo
-end
+require "runivedo/uconnection"
+require "runivedo/uresult"

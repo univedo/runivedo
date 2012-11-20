@@ -2,11 +2,10 @@ require "rfc-ws-client"
 
 module Runivedo
   class UConnection
-    def initialize(url)
+    def initialize(ws)
       @send_buffer = ""
       @receive_buffer = ""
-      return unless url
-      @ws = RfcWebSocket::WebSocket.new(url)
+      @ws = ws
     end
 
     def send_obj(obj)
@@ -54,7 +53,7 @@ module Runivedo
         count.times { chars << get_bytes(2, "S") }
         chars.pack("U*")
       else
-        throw "unsupported type #{type}"
+        raise "unsupported type #{type}"
       end
     end
 
@@ -83,7 +82,7 @@ module Runivedo
       when String
         [30, obj.bytesize, obj].pack("CLa*")
       else
-        throw "sending not supported for class #{obj.class}"
+        raise "sending not supported for class #{obj.class}"
       end
     end
   end
