@@ -1,6 +1,7 @@
 module Runivedo
   class UResult
     include Enumerable
+    include Protocol
 
     attr_reader :affected_rows, :complete
 
@@ -14,12 +15,13 @@ module Runivedo
 
     def run
       @run = true
+      @connection.send_obj CODE_SQL
       @connection.send_obj(@query)
       status = @connection.receive
       # Do we have an error?
       case status
-      when 10
-      when 11
+      when CODE_RESULT
+      when CODE_MODIFICATION
         # Receive affected rows info
         @affected_rows = @connection.receive.to_i
         @complete = true
@@ -33,14 +35,14 @@ module Runivedo
       return nil if @complete
       status = @connection.receive
       case status
-      when 20
+      when CODE_RESULT_MORE
         cols_count = @connection.receive
         row = []
         cols_count.times do
           row << @connection.receive
         end
         row
-      when 21
+      when CODE_RESULT_CLOSED
         @complete = true
         nil
       else

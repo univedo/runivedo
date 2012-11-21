@@ -1,5 +1,7 @@
 module Runivedo
   class Runivedo
+    include Protocol
+
     def initialize(args = {})
       raise "no url provided" unless args.has_key? :url
       raise "no user provided" unless args.has_key? :user
@@ -8,7 +10,7 @@ module Runivedo
       @transaction = false
       @conn = UConnection.new(args[:url])
       @err_handler = ErrorHandler.new(@conn)
-      @conn.send_obj 1
+      @conn.send_obj PROTOCOL_VERSION
       @conn.send_obj args[:user]
       @conn.send_obj args[:password]
       @conn.send_obj args[:uts]
@@ -21,21 +23,21 @@ module Runivedo
 
     def begin
       @transaction = true
-      @conn.send_obj 110
+      @conn.send_obj CODE_BEGIN
       @conn.receive_ok_or_error
     end
 
     def commit
       raise "no transaction active" unless @transaction
       @transaction = false
-      @conn.send_obj 111
+      @conn.send_obj CODE_COMMIT
       @conn.receive_ok_or_error
     end
 
     def rollback
       raise "no transaction active" unless @transaction
       @transaction = false
-      @conn.send_obj 112
+      @conn.send_obj CODE_ROLLBACK
       @conn.receive_ok_or_error
     end
 

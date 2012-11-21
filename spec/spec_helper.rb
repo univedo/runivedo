@@ -1,6 +1,8 @@
 require 'rspec'
 require 'runivedo'
 
+include Runivedo::Protocol
+
 class MockConnection
   attr_reader :sent_data, :recv_data
 

@@ -2,6 +2,8 @@ require "rfc-ws-client"
 
 module Runivedo
   class UConnection
+    include Protocol
+    
     def initialize(url)
       @send_buffer = ""
       @receive_buffer = ""
@@ -68,7 +70,7 @@ module Runivedo
 
     def receive_ok_or_error
       status = receive
-      handle_error(status) if status != 0
+      handle_error(status) if status != CODE_ACK
     end
 
     private
