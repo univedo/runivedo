@@ -17,6 +17,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency("rfc-ws-client")
+  gem.add_dependency("rainbow")
+  gem.add_dependency("readline-history-restore")
   gem.add_development_dependency('rspec')
   gem.add_development_dependency('rspec_junit_formatter')
   gem.add_development_dependency('fuubar')
