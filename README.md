@@ -11,7 +11,7 @@ gem 'runivedo'
 ## Usage
 
 ```ruby
-connection = Runivedo.new(host: "univedo://hostname.com/bucket",
+connection = Runivedo.new(url: "univedo://hostname.com/bucket",
                           user: "username",
                           password: "secret",
                           uts: IO.read("univedo.uts"))

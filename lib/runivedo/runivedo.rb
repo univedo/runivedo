@@ -6,7 +6,7 @@ module Runivedo
       raise "no password provided" unless args.has_key? :password
       raise "no uts provided" unless args.has_key? :uts
       @transaction = false
-      @conn = UConnection.new(url)
+      @conn = UConnection.new(args[:url])
       @conn.send_obj 1
       @conn.send_obj args[:user]
       @conn.send_obj args[:password]
