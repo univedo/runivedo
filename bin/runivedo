@@ -42,22 +42,30 @@ Readline.completion_append_character = " "
 Readline.completion_proc = comp
 
 options = {}
-OptionParser.new do |opts|
-  opts.on('-h', '--host HOST', "Server url") { |url| options[:url] = url }
-  opts.on('-u', '--user USER', "Username") { |user| options[:user] = user }
-  opts.on('-p', '--password PASSWORD', "Password") { |password| options[:password] = password }
-  opts.on('-f', '--uts UTS', "Path to uts file") { |uts| options[:uts] = uts }
-
+op = OptionParser.new do |opts|
+  opts.banner = "Usage: runivedo [options] <url>"
+  options[:user] = "test"
+  opts.on('-u', '--user USER', "Username (default 'test')") { |user| options[:user] = user }
+  options[:password] = ""
+  opts.on('-p', '--password PASSWORD', "Password (default '')") { |password| options[:password] = password }
+  options[:uts] = "app.uts"
+  opts.on('-f', '--uts UTS', "UTS file (default 'app.uts')") { |uts| options[:uts] = uts }
+  opts.on('-v', "--version", "Show version") do
+    puts "Runivedo #{Runivedo::VERSION}"
+    exit
+  end
   opts.on('-h', '--help', 'Display this screen') do
     puts opts
     exit
   end
-end.parse!
+end
+op.parse!
 
-raise "missing host" unless options.has_key? :url
-raise "missing user" unless options.has_key? :user
-raise "missing password" unless options.has_key? :password
-raise "missing uts" unless options.has_key? :uts
+if ARGV.count == 0
+  puts op
+  exit
+end
+options[:url] = ARGV[0]
 options[:uts] = IO.read(options[:uts])
 
 runivedo = Runivedo::Runivedo.new(options)

@@ -9,7 +9,8 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Lucas Clemente"]
   gem.email         = ["lucas.clemente@univedo.de"]
   gem.summary       = %q{Ruby binding for Univedo}
-  gem.homepage      = ""
+  gem.description   = %q{Ruby binding for Univedo}
+  gem.homepage      = "https://univedo.com"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
