@@ -16,19 +16,15 @@ module Runivedo
       @run = true
       @connection.send_obj(@query)
       status = @connection.receive
-      raise "protocol error" unless status.is_a?(Fixnum)
       # Do we have an error?
       case status
-      when 0
-      when 1
+      when 10
+      when 11
         # Receive affected rows info
         @affected_rows = @connection.receive.to_i
         @complete = true
       else
-        # Error
-        error_msg = @connection.receive
-        @complete = true
-        raise error_msg.to_s
+        @conn.handle_error(status)
       end
     end
 
@@ -36,20 +32,19 @@ module Runivedo
       run unless @run
       return nil if @complete
       status = @connection.receive
-      raise "protocol error" unless status.is_a?(Fixnum)
       case status
-      when 0
+      when 20
         cols_count = @connection.receive
         row = []
         cols_count.times do
           row << @connection.receive
         end
         row
-      when 1
+      when 21
         @complete = true
         nil
       else
-        raise "unexpected status #{status} while receiving rows"
+        @conn.handle_error(status)
       end
     end
 

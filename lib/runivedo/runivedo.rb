@@ -7,12 +7,12 @@ module Runivedo
       raise "no uts provided" unless args.has_key? :uts
       @transaction = false
       @conn = UConnection.new(args[:url])
+      @err_handler = ErrorHandler.new(@conn)
       @conn.send_obj 1
       @conn.send_obj args[:user]
       @conn.send_obj args[:password]
       @conn.send_obj args[:uts]
-      status = @conn.receive
-      error(status) unless status == 0
+      @conn.receive_ok_or_error
     end
 
     def close
@@ -22,29 +22,26 @@ module Runivedo
     def begin
       @transaction = true
       @conn.send_obj 110
-      status = @conn.receive
-      error(status) unless status == 0
+      @conn.receive_ok_or_error
     end
 
     def commit
       raise "no transaction active" unless @transaction
       @transaction = false
       @conn.send_obj 111
-      status = @conn.receive
-      error(status) unless status == 0
+      @conn.receive_ok_or_error
     end
 
     def rollback
       raise "no transaction active" unless @transaction
       @transaction = false
       @conn.send_obj 112
-      status = @conn.receive
-      error(status) unless status == 0
+      @conn.receive_ok_or_error
     end
 
     def execute(query, &block)
       raise "no query" unless query
-      result = UResult.new(@conn, query)
+      result = UResult.new(@conn, @err_handler, query)
       result.run
       if block
         result.each(&block)

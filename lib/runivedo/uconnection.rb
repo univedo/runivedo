@@ -61,6 +61,16 @@ module Runivedo
       @ws.close
     end
 
+    def handle_error(status)
+      raise "did not receive error code" unless status.is_a? Fixnum
+      raise "Error #{status}: #{receive.to_s}"
+    end
+
+    def receive_ok_or_error
+      status = receive
+      handle_error(status) if status != 0
+    end
+
     private
 
     def get_bytes(count, pack_opts)
