@@ -5,9 +5,10 @@ module Runivedo
 
     attr_reader :affected_rows, :rows
 
-    def initialize(conn, query)
+    def initialize(conn, query, bindings = {})
       @conn = conn
       @query = query
+      @bindings = bindings
       @affected_rows = nil
       @run = false
       @rows = nil
@@ -17,7 +18,11 @@ module Runivedo
       @run = true
       @conn.send_obj CODE_SQL
       @conn.send_obj(@query)
-      @conn.send_obj(0) # TODO Binds
+      @conn.send_obj(@bindings.count)
+      @bindings.each do |k, v|
+        @conn.send_obj(k.to_s)
+        @conn.send_obj(v)
+      end
       @conn.end_frame
       @conn.receive_ok_or_error
       @affected_rows = @conn.receive

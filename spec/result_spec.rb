@@ -15,6 +15,15 @@ describe Runivedo::UResult do
       connection.sent_data.should == [CODE_SQL, "SELECT answer FROM universe", 0]
     end
 
+    it 'sends bindings' do
+      connection.recv_data << CODE_ACK
+      connection.recv_data << 42
+      connection.recv_data << CODE_RESULT_CLOSED
+      r = Runivedo::UResult.new(connection, "SELECT answer FROM :where", where: "universe")
+      r.run
+      connection.sent_data.should == [CODE_SQL, "SELECT answer FROM :where", 1, "where", "universe"]
+    end
+
     it "receives one result" do
       connection.recv_data << CODE_ACK
       connection.recv_data << 42

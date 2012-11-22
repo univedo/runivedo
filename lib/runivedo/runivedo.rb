@@ -44,9 +44,9 @@ module Runivedo
       @conn.receive_ok_or_error
     end
 
-    def execute(query, &block)
+    def execute(query, bindings = {}, &block)
       raise "no query" unless query
-      result = UResult.new(@conn, query)
+      result = UResult.new(@conn, query, bindings)
       result.run
       if block
         result.each(&block)
