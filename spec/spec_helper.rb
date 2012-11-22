@@ -20,6 +20,9 @@ class MockConnection
     @i += 1
     @recv_data[@i-1]
   end
+
+  def end_frame
+  end
 end
 
 RSpec.configure do |config|

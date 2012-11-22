@@ -8,7 +8,7 @@ describe Runivedo::UResult do
       connection.recv_data << CODE_RESULT
       r = Runivedo::UResult.new(connection, "SELECT answer FROM universe")
       r.run
-      connection.sent_data.should == [CODE_SQL, "SELECT answer FROM universe"]
+      connection.sent_data.should == [CODE_SQL, "SELECT answer FROM universe", 0]
     end
 
     it "receives affected rows" do
