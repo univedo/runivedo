@@ -92,16 +92,13 @@ while line = readline_wrapper
   else
     begin
       result = runivedo.execute(line)
-      if result.affected_rows
-        puts "Updated #{pluralize("row", result.affected_rows)}".color(:green)
-      else
-        arr = result.to_a
-        if arr.count > 0
-          col_count = arr[0].count
-          puts Terminal::Table.new rows: arr, headings: (1..col_count).collect { |i| "Col #{i}".bright }
-        end
-        puts "#{pluralize("row", arr.count)} returned.".color(:green)
+      arr = result.rows
+      if arr.count > 0
+        col_count = arr[0].count
+        puts Terminal::Table.new rows: arr, headings: (1..col_count).collect { |i| "Col #{i}".bright }
+        puts "#{pluralize("row", arr.count)} affected.".color(:green)
       end
+      puts "#{pluralize("row", result.affected_rows)} affected.".color(:green)
     rescue => e
       puts "Caught exception:"
       puts e.to_s.color(:red)
