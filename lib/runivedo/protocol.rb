@@ -8,5 +8,7 @@ module Runivedo
     CODE_SQL = 100
     CODE_RESULT_MORE = 10
     CODE_RESULT_CLOSED = 11
+    CODE_E_FATAL = 200
+    CODE_E_QUERY = 201
   end
 end

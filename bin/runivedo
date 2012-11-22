@@ -9,6 +9,8 @@ require 'readline/history/restore'
 require 'terminal-table'
 require 'optparse'
 
+include Runivedo
+
 def pluralize(singular, count)
   "#{count} #{singular}#{count != 1 ? 's' : ''}"
 end
@@ -51,7 +53,7 @@ op = OptionParser.new do |opts|
   options[:uts] = "app.uts"
   opts.on('-f', '--uts UTS', "UTS file (default 'app.uts')") { |uts| options[:uts] = uts }
   opts.on('-v', "--version", "Show version") do
-    puts "Runivedo #{Runivedo::VERSION}"
+    puts "Runivedo #{VERSION}"
     exit
   end
   opts.on('-h', '--help', 'Display this screen') do
@@ -84,10 +86,10 @@ while line = readline_wrapper
   when "q", "quit", "exit"
     break
   when "version", "info", "v"
-    puts "Runivedo Shell #{Runivedo::VERSION}"
+    puts "Runivedo Shell #{VERSION}"
     puts "(c) 2013 Univedo"
   when "help", "h", "?"
-    puts "Runivedo Shell #{Runivedo::VERSION} Help"
+    puts "Runivedo Shell #{VERSION} Help"
     puts "TODO"
   else
     begin
@@ -95,14 +97,16 @@ while line = readline_wrapper
       arr = result.rows
       if arr.count > 0
         col_count = arr[0].count
-        puts Terminal::Table.new rows: arr, headings: (1..col_count).collect { |i| "Col #{i}".bright }
+        puts Terminal::Table.new rows: arr, headings: result.columns.map(&:bright)
         puts "#{pluralize("row", arr.count)} returned.".color(:green)
       end
       puts "#{pluralize("row", result.affected_rows)} affected.".color(:green)
+    rescue RunivedoSqlError => e
+      puts "SQL Error: #{e.to_s}".color(:red)
     rescue => e
-      # puts "Caught exception:"
+      puts "Caught exception:"
       puts e.to_s.color(:red)
-      # puts e.backtrace
+      puts e.backtrace
     end
   end
 end

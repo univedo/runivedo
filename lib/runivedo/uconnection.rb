@@ -65,7 +65,17 @@ module Runivedo
 
     def handle_error(status)
       raise "did not receive error code" unless status.is_a? Fixnum
-      raise "Error #{status}: #{receive.to_s}"
+      reason = receive
+      case status
+      when CODE_E_FATAL
+        puts "Received fatal error: #{reason}".color(:red)
+        puts "Exiting"
+        exit CODE_E_FATAL
+      when CODE_E_QUERY
+        raise RunivedoSqlError.new(reason)
+      else
+        raise "unknown error"
+      end
     end
 
     def receive_ok_or_error

@@ -3,7 +3,7 @@ module Runivedo
     include Enumerable
     include Protocol
 
-    attr_reader :affected_rows, :rows
+    attr_reader :affected_rows, :rows, :columns
 
     def initialize(conn, query, bindings = {})
       @conn = conn
@@ -12,6 +12,8 @@ module Runivedo
       @affected_rows = nil
       @run = false
       @rows = nil
+      @columns = nil
+      @col_count = nil
     end
 
     def run
@@ -26,6 +28,9 @@ module Runivedo
       @conn.end_frame
       @conn.receive_ok_or_error
       @affected_rows = @conn.receive
+      @col_count = @conn.receive
+      @columns = []
+      @col_count.times { @columns << @conn.receive }
       @rows = []
       while r = next_row
         @rows << r
@@ -45,9 +50,8 @@ module Runivedo
       status = @conn.receive
       case status
       when CODE_RESULT_MORE
-        cols_count = @conn.receive
         row = []
-        cols_count.times do
+        @col_count.times do
           row << @conn.receive
         end
         row
