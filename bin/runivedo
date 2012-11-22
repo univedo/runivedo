@@ -100,9 +100,9 @@ while line = readline_wrapper
       end
       puts "#{pluralize("row", result.affected_rows)} affected.".color(:green)
     rescue => e
-      puts "Caught exception:"
+      # puts "Caught exception:"
       puts e.to_s.color(:red)
-      puts e.backtrace
+      # puts e.backtrace
     end
   end
 end
