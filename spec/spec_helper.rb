@@ -23,6 +23,13 @@ class MockConnection
 
   def end_frame
   end
+
+  def receive_ok_or_error
+    @i += 1
+  end
+
+  def handle_error(s)
+  end
 end
 
 RSpec.configure do |config|

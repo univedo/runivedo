@@ -3,14 +3,14 @@ module Runivedo
     include Enumerable
     include Protocol
 
-    attr_reader :affected_rows, :complete
+    attr_reader :affected_rows, :rows
 
     def initialize(conn, query)
       @conn = conn
       @query = query
       @affected_rows = nil
-      @complete = false
       @run = false
+      @rows = nil
     end
 
     def run
@@ -19,22 +19,24 @@ module Runivedo
       @conn.send_obj(@query)
       @conn.send_obj(0) # TODO Binds
       @conn.end_frame
-      status = @conn.receive
-      # Do we have an error?
-      case status
-      when CODE_RESULT
-      when CODE_MODIFICATION
-        # Receive affected rows info
-        @affected_rows = @conn.receive.to_i
-        @complete = true
-      else
-        @conn.handle_error(status)
+      @conn.receive_ok_or_error
+      @affected_rows = @conn.receive
+      @rows = []
+      while r = next_row
+        @rows << r
       end
+      @rows
     end
 
-    def next_row
+
+    def each(&block)
       run unless @run
-      return nil if @complete
+      @rows.each(&block)
+    end
+
+    private
+
+    def next_row
       status = @conn.receive
       case status
       when CODE_RESULT_MORE
@@ -45,16 +47,9 @@ module Runivedo
         end
         row
       when CODE_RESULT_CLOSED
-        @complete = true
         nil
       else
         @conn.handle_error(status)
-      end
-    end
-
-    def each(&block)
-      while row = next_row
-        block.call(row)
       end
     end
   end
