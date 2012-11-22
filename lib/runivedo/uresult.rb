@@ -5,8 +5,8 @@ module Runivedo
 
     attr_reader :affected_rows, :complete
 
-    def initialize(connection, query)
-      @connection = connection
+    def initialize(conn, query)
+      @conn = conn
       @query = query
       @affected_rows = nil
       @complete = false
@@ -15,15 +15,17 @@ module Runivedo
 
     def run
       @run = true
-      @connection.send_obj CODE_SQL
-      @connection.send_obj(@query)
-      status = @connection.receive
+      @conn.send_obj CODE_SQL
+      @conn.send_obj(@query)
+      @conn.send_obj(0) # TODO Binds
+      @conn.end_frame
+      status = @conn.receive
       # Do we have an error?
       case status
       when CODE_RESULT
       when CODE_MODIFICATION
         # Receive affected rows info
-        @affected_rows = @connection.receive.to_i
+        @affected_rows = @conn.receive.to_i
         @complete = true
       else
         @conn.handle_error(status)
@@ -33,13 +35,13 @@ module Runivedo
     def next_row
       run unless @run
       return nil if @complete
-      status = @connection.receive
+      status = @conn.receive
       case status
       when CODE_RESULT_MORE
-        cols_count = @connection.receive
+        cols_count = @conn.receive
         row = []
         cols_count.times do
-          row << @connection.receive
+          row << @conn.receive
         end
         row
       when CODE_RESULT_CLOSED

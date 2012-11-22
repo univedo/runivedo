@@ -17,7 +17,7 @@ HIST_FILE = "#{ENV["HOME"]}/.runivedo_history"
 Readline::History::Restore.new(HIST_FILE)
 
 def readline_wrapper
-  line = Readline.readline('→ '.color(:yellow), true)
+  line = Readline.readline('→ '.color(:blue).bright, true)
   return nil if line.nil?
   if line =~ /^\s*$/ or Readline::HISTORY.to_a[-2] == line
     Readline::HISTORY.pop
@@ -66,13 +66,20 @@ if ARGV.count == 0
   exit
 end
 options[:url] = ARGV[0]
-options[:uts] = IO.read(options[:uts])
+begin
+  options[:uts] = IO.read(options[:uts])
+rescue
+  puts "Could not read #{options[:uts]}, continuing without.".color(:yellow)
+  options[:uts] = ""
+end
 
 runivedo = Runivedo::Runivedo.new(options)
+puts "Connected."
 
 while line = readline_wrapper
   break if line.nil?
   line.strip!
+  next if line.empty?
   case line
   when "q", "quit", "exit"
     break
@@ -89,12 +96,16 @@ while line = readline_wrapper
         puts "Updated #{pluralize("row", result.affected_rows)}".color(:green)
       else
         arr = result.to_a
-        puts Terminal::Table.new rows: arr, headings: (1..arr.count+1).map { |i| "Row #{i}".bright }
+        if arr.count > 0
+          col_count = arr[0].count
+          puts Terminal::Table.new rows: arr, headings: (1..col_count).collect { |i| "Col #{i}".bright }
+        end
         puts "#{pluralize("row", arr.count)} returned.".color(:green)
       end
     rescue => e
       puts "Caught exception:"
-      puts e.to_s.color(:red)  
+      puts e.to_s.color(:red)
+      puts e.backtrace
     end
   end
 end
