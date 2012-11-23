@@ -7,6 +7,7 @@ describe Runivedo::UResult do
     it "sends the query and receives affected rows" do
       connection.recv_data << CODE_ACK
       connection.recv_data << 42
+      connection.recv_data << 0
       connection.recv_data << CODE_RESULT_CLOSED
       r = Runivedo::UResult.new(connection, "SELECT answer FROM universe")
       r.run
@@ -18,6 +19,7 @@ describe Runivedo::UResult do
     it 'sends bindings' do
       connection.recv_data << CODE_ACK
       connection.recv_data << 42
+      connection.recv_data << 0
       connection.recv_data << CODE_RESULT_CLOSED
       r = Runivedo::UResult.new(connection, "SELECT answer FROM :where", where: "universe")
       r.run
@@ -27,8 +29,10 @@ describe Runivedo::UResult do
     it "receives one result" do
       connection.recv_data << CODE_ACK
       connection.recv_data << 42
-      connection.recv_data << CODE_RESULT_MORE
       connection.recv_data << 2
+      connection.recv_data << "c1"
+      connection.recv_data << "c2"
+      connection.recv_data << CODE_RESULT_MORE
       connection.recv_data << "foo"
       connection.recv_data << "bar"
       connection.recv_data << CODE_RESULT_CLOSED
@@ -36,17 +40,19 @@ describe Runivedo::UResult do
       r.run
       r.rows.count.should == 1
       r.rows[0].should == ["foo", "bar"]
+      r.columns.should == ["c1", "c2"]
     end
 
     it "receives multiple results" do
       connection.recv_data << CODE_ACK
       connection.recv_data << 42
-      connection.recv_data << CODE_RESULT_MORE
       connection.recv_data << 2
+      connection.recv_data << "c1"
+      connection.recv_data << "c2"
+      connection.recv_data << CODE_RESULT_MORE
       connection.recv_data << "foo"
       connection.recv_data << "bar"
       connection.recv_data << CODE_RESULT_MORE
-      connection.recv_data << 2
       connection.recv_data << "fu"
       connection.recv_data << "baz"
       connection.recv_data << CODE_RESULT_CLOSED
@@ -60,8 +66,10 @@ describe Runivedo::UResult do
     it "receives one result in enumerator" do
       connection.recv_data << CODE_ACK
       connection.recv_data << 42
-      connection.recv_data << CODE_RESULT_MORE
       connection.recv_data << 2
+      connection.recv_data << "c1"
+      connection.recv_data << "c2"
+      connection.recv_data << CODE_RESULT_MORE
       connection.recv_data << "foo"
       connection.recv_data << "bar"
       connection.recv_data << CODE_RESULT_CLOSED
