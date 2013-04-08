@@ -41,6 +41,7 @@ describe Runivedo::UResult do
       r.rows.count.should == 1
       r.rows[0].should == ["foo", "bar"]
       r.columns.should == ["c1", "c2"]
+      r.each { |row| row.should == ["foo", "bar"] }
     end
 
     it "receives multiple results" do
@@ -61,20 +62,6 @@ describe Runivedo::UResult do
       r.rows.count.should == 2
       r.rows[0].should == ["foo", "bar"]
       r.rows[1].should == ["fu", "baz"]
-    end
-
-    it "receives one result in enumerator" do
-      connection.recv_data << CODE_ACK
-      connection.recv_data << 42
-      connection.recv_data << 2
-      connection.recv_data << "c1"
-      connection.recv_data << "c2"
-      connection.recv_data << CODE_RESULT_MORE
-      connection.recv_data << "foo"
-      connection.recv_data << "bar"
-      connection.recv_data << CODE_RESULT_CLOSED
-      r = Runivedo::UResult.new(connection, nil)
-      r.each { |row| row.should == ["foo", "bar"] }
     end
   end
 end

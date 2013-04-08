@@ -38,7 +38,6 @@ module Runivedo
       @rows
     end
 
-
     def each(&block)
       run unless @run
       @rows.each(&block)
