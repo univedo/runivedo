@@ -18,7 +18,6 @@ module Runivedo
         end
       end
       @stream.connect(args[:url]) do
-        puts "open"
         @urologin = build_ro(UROLOGIN_NAME, app: DOORKEEPER_UUID)
         @urologin.get_required_credentials
       end

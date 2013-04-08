@@ -15,6 +15,7 @@ module Runivedo
     end
 
     def receive_return
+      puts "receive return"
       raise unless @stream.receive == 0
       p @stream.receive
     end
@@ -24,6 +25,7 @@ module Runivedo
       @stream.send_obj(OPERATION_CALL_ROM)
       @stream.send_obj(@id)
       @stream.send_obj(@call_id)
+      @call_id += 1
       @stream.send_obj(name.to_s.camelize(:lower))
       args.each {|a| @stream.send_obj(a)}
       @stream.end_frame

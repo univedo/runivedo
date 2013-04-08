@@ -26,6 +26,7 @@ module Runivedo
         @ws.onopen = block
         @ws.onmessage = lambda do |e|
           @receive_buffer = e.data
+          @on_message.call
         end
         @ws.onclose = @on_close
       }
