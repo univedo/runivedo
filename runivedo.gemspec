@@ -17,7 +17,9 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_dependency("rfc-ws-client")
+  gem.add_dependency("faye-websocket")
+  gem.add_dependency("active_support")
+  gem.add_dependency("eventmachine")
   gem.add_dependency("term-ansicolor")
   gem.add_dependency("readline-history-restore")
   gem.add_dependency("terminal-table")

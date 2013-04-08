@@ -11,11 +11,11 @@ gem 'runivedo'
 ## Usage
 
 ```ruby
-connection = Runivedo.new(url: "univedo://hostname.com/bucket",
+stream = Runivedo.new(url: "univedo://hostname.com/bucket",
                           user: "username",
                           password: "secret",
                           uts: IO.read("univedo.uts"))
-connection.execute("SELECT f1, f2 FROM tbl WHERE name = 'foo'") do |row|
+stream.execute("SELECT f1, f2 FROM tbl WHERE name = 'foo'") do |row|
   puts "f1: #{row[0]}, f2: #{row[1]}"
 end
 ```

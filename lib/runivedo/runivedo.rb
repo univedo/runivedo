@@ -4,54 +4,38 @@ module Runivedo
 
     def initialize(args = {})
       raise "no url provided" unless args.has_key? :url
-      raise "no user provided" unless args.has_key? :user
-      raise "no password provided" unless args.has_key? :password
-      raise "no uts provided" unless args.has_key? :uts
-      @transaction = false
-      @conn = UConnection.new(args[:url])
-      @conn.send_obj PROTOCOL_VERSION
-      @conn.send_obj args[:user]
-      @conn.send_obj args[:password]
-      @conn.send_obj args[:uts]
-      @conn.end_frame
-      @conn.receive_ok_or_error
+      @remote_objects = {}
+      @stream = UStream.new
+      @stream.on_close do
+        puts "close"
+        exit
+      end
+      @stream.on_message do
+        operation = @stream.receive
+        case operation
+        when OPERATION_ANSWER_CALL
+          @remote_objects[@stream.receive].receive_return
+        end
+      end
+      @stream.connect(args[:url]) do
+        puts "open"
+        @urologin = build_ro(UROLOGIN_NAME, app: DOORKEEPER_UUID)
+        @urologin.get_required_credentials
+      end
     end
 
     def close
-      @conn.close
+      @stream.close
     end
 
-    def begin
-      @transaction = true
-      @conn.send_obj CODE_BEGIN
-      @conn.end_frame
-      @conn.receive_ok_or_error
-    end
+    private
 
-    def commit
-      raise "no transaction active" unless @transaction
-      @transaction = false
-      @conn.send_obj CODE_COMMIT
-      @conn.end_frame
-      @conn.receive_ok_or_error
-    end
-
-    def rollback
-      raise "no transaction active" unless @transaction
-      @transaction = false
-      @conn.send_obj CODE_ROLLBACK
-      @conn.end_frame
-      @conn.receive_ok_or_error
-    end
-
-    def execute(query, bindings = {}, &block)
-      raise "no query" unless query
-      result = UResult.new(@conn, query, bindings)
-      result.run
-      if block
-        result.each(&block)
-      end
-      result
+    def build_ro(name, app: app)
+      @next_id ||= 1
+      ro = RemoteObject.new(stream: @stream, name: name, app: app, id: @next_id)
+      @remote_objects[@next_id] = ro
+      @next_id += 2
+      ro
     end
   end
 end

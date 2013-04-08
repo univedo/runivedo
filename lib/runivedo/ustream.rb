@@ -1,13 +1,34 @@
-require "rfc-ws-client"
+require 'faye/websocket'
+require 'eventmachine'
 
 module Runivedo
-  class UConnection
+  class UStream
     include Protocol
     
-    def initialize(url)
+    def initialize
       @send_buffer = ""
       @receive_buffer = ""
-      @ws = url ? RfcWebSocket::WebSocket.new(url) : nil
+      @on_message = lambda {}
+      @on_close = lambda {}
+    end
+
+    def on_message(&block)
+      @on_message = block
+    end
+
+    def on_close(&block)
+      @on_close = block
+    end
+
+    def connect(url, &block)
+      EM.run {
+        @ws = Faye::WebSocket::Client.new(url)
+        @ws.onopen = block
+        @ws.onmessage = lambda do |e|
+          @receive_buffer = e.data
+        end
+        @ws.onclose = @on_close
+      }
     end
 
     def send_obj(obj)
@@ -15,8 +36,12 @@ module Runivedo
     end
 
     def end_frame
-      @ws.send_message(@send_buffer, binary: true)
+      @ws.send(@send_buffer)
       @send_buffer = ""
+    end
+
+    def has_content
+      @receive_buffer.size > 0
     end
 
     def receive()
@@ -54,6 +79,11 @@ module Runivedo
         chars = []
         count.times { chars << get_bytes(2, "S") }
         chars.pack("U*")
+      when 61
+        count = get_bytes(4, "L")
+        hash = {}
+        count.times { hash[receive] = receive }
+        hash
       else
         raise "unsupported type #{type}"
       end
@@ -63,34 +93,11 @@ module Runivedo
       @ws.close
     end
 
-    def handle_error(status)
-      raise "did not receive error code" unless status.is_a? Fixnum
-      reason = receive
-      case status
-      when CODE_E_FATAL
-        puts "Received fatal error: #{reason}".color(:red)
-        puts "Exiting"
-        exit CODE_E_FATAL
-      when CODE_E_QUERY
-        raise RunivedoSqlError.new(reason)
-      else
-        raise "unknown error"
-      end
-    end
-
-    def receive_ok_or_error
-      status = receive
-      handle_error(status) if status != CODE_ACK
-    end
-
     private
 
     def get_bytes(count, pack_opts)
-      while @receive_buffer.size < count
-        data, binary = @ws.receive
-        raise "connection closed" if data.nil?
-        raise "non-binary received" unless binary
-        @receive_buffer << data
+      if @receive_buffer.size < count
+        raise "stream closed" if data.nil?
       end
       @receive_buffer.slice!(0, count).unpack(pack_opts)[0]
     end
