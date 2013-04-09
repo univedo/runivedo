@@ -34,10 +34,10 @@ module Runivedo
       exit
     end
 
-    def onmessage
-      ro_id = @stream.receive
+    def onmessage(message)
+      ro_id = message.read
       raise "ro_id invalid" unless @remote_objects.has_key?(ro_id)
-      @remote_objects[ro_id].receive
+      @remote_objects[ro_id].receive(message)
     end
   end
 end

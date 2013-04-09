@@ -8,20 +8,10 @@ class MockStream
 
   def initialize
     @sent_data = []
-    @recv_data = []
-    @i = 0
   end
 
-  def send_obj(msg)
-    @sent_data << msg
-  end
-
-  def receive
-    @i += 1
-    @recv_data[@i-1]
-  end
-
-  def end_frame
+  def send_message(&block)
+    yield @sent_data
   end
 end
 
