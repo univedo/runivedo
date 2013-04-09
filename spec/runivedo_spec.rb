@@ -6,7 +6,7 @@ describe Runivedo::Runivedo do
   end
 
   context "when running simple queries" do
-    let(:stream) { MockConnection.new }
+    let(:stream) { MockStream.new }
 
   end
 end

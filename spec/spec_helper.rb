@@ -3,7 +3,7 @@ require 'runivedo'
 
 include Runivedo::Protocol
 
-class MockConnection
+class MockStream
   attr_reader :sent_data, :recv_data
 
   def initialize
