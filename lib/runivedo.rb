@@ -1,6 +1,3 @@
-require 'active_support/inflector'
-
-
 require "runivedo/version"
 require "runivedo/protocol"
 require "runivedo/error"

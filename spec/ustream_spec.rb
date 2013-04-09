@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe Runivedo::UStream do
   describe "sending" do
-    let(:stream) { Runivedo::UStream.new(nil) }
+    let(:stream) { Runivedo::UStream.new }
 
     it "sends null" do
       stream.send(:send_impl, nil).should == "\x00"
@@ -27,7 +27,7 @@ describe Runivedo::UStream do
   end
 
   describe "receiving" do
-    let(:stream) { Runivedo::UStream.new(nil) }
+    let(:stream) { Runivedo::UStream.new }
 
     it "receives null" do
       stream.instance_variable_set(:@receive_buffer, "\x00")
@@ -61,10 +61,20 @@ describe Runivedo::UStream do
       stream.instance_variable_set(:@receive_buffer, "\x1f\x06\x00\x00\x00f\x00o\x00o\x00b\x00a\x00r\x00")
       stream.receive.should == "foobar"
     end
+
+    it "receives lists" do
+      stream.instance_variable_set(:@receive_buffer, "\x3c\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x1e\x03\x00\x00\x00bar")
+      stream.receive.should == %w(foo bar)
+    end
+
+    it "receives maps" do
+      stream.instance_variable_set(:@receive_buffer, "\x3d\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x0a\x01\x1e\x03\x00\x00\x00bar\x0a\x02")
+      stream.receive.should == {"foo" => 1, "bar" => 2}
+    end
   end
 
   describe "sending and receiving" do
-    let(:stream) { Runivedo::UStream.new(nil) }
+    let(:stream) { Runivedo::UStream.new }
 
     it "works for null" do
       stream.instance_variable_set(:@receive_buffer, stream.send(:send_impl, nil))

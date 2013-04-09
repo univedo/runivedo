@@ -4,20 +4,14 @@ require 'eventmachine'
 module Runivedo
   class UStream
     include Protocol
+
+    attr_accessor :onmessage, :onclose
     
     def initialize
       @send_buffer = ""
       @receive_buffer = ""
-      @on_message = lambda {}
-      @on_close = lambda {}
-    end
-
-    def on_message(&block)
-      @on_message = block
-    end
-
-    def on_close(&block)
-      @on_close = block
+      @onmessage = lambda {}
+      @onclose = lambda {}
     end
 
     def connect(url, &block)
@@ -26,9 +20,9 @@ module Runivedo
         @ws.onopen = block
         @ws.onmessage = lambda do |e|
           @receive_buffer = e.data
-          @on_message.call
+          @onmessage.call
         end
-        @ws.onclose = @on_close
+        @ws.onclose = @onclose
       }
     end
 
@@ -80,11 +74,12 @@ module Runivedo
         chars = []
         count.times { chars << get_bytes(2, "S") }
         chars.pack("U*")
+      when 60
+        count = get_bytes(4, "L")
+        count.times.map { receive }
       when 61
         count = get_bytes(4, "L")
-        hash = {}
-        count.times { hash[receive] = receive }
-        hash
+        Hash[count.times.map { [receive, receive] }]
       else
         raise "unsupported type #{type}"
       end

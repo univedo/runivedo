@@ -1,3 +1,5 @@
+require 'active_support/inflector'
+
 module Runivedo
   class RemoteObject
     include Protocol
@@ -15,7 +17,6 @@ module Runivedo
     end
 
     def receive_return
-      puts "receive return"
       raise unless @stream.receive == 0
       p @stream.receive
     end

@@ -6,18 +6,10 @@ module Runivedo
       raise "no url provided" unless args.has_key? :url
       @remote_objects = {}
       @stream = UStream.new
-      @stream.on_close do
-        puts "close"
-        exit
-      end
-      @stream.on_message do
-        operation = @stream.receive
-        case operation
-        when OPERATION_ANSWER_CALL
-          @remote_objects[@stream.receive].receive_return
-        end
-      end
+      @stream.onclose = method(:onclose)
+      @stream.onmessage = method(:onmessage)
       @stream.connect(args[:url]) do
+        puts "connected"
         @urologin = build_ro(UROLOGIN_NAME, app: DOORKEEPER_UUID)
         @urologin.get_required_credentials
       end
@@ -35,6 +27,19 @@ module Runivedo
       @remote_objects[@next_id] = ro
       @next_id += 2
       ro
+    end
+
+    def onclose
+      puts "closed"
+      exit
+    end
+
+    def onmessage
+      operation = @stream.receive
+      case operation
+      when OPERATION_ANSWER_CALL
+        @remote_objects[@stream.receive].receive_return
+      end
     end
   end
 end
