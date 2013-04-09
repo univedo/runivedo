@@ -103,7 +103,7 @@ module Runivedo
 
     def send_message(&block)
       m = Message.new
-      yield m
+      block.call(m)
       @ws.send(m.buffer)
     end
 

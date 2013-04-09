@@ -8,11 +8,14 @@ module Runivedo
       @stream = UStream.new
       @stream.onclose = method(:onclose)
       @stream.onmessage = method(:onmessage)
+      opened = Event.new
       @stream.connect(args[:url]) do
         puts "connected"
-        @urologin = build_ro(UROLOGIN_NAME, app: DOORKEEPER_UUID)
-        @urologin.get_required_credentials
+        opened.signal
       end
+      opened.wait
+      @urologin = build_ro(UROLOGIN_NAME, app: DOORKEEPER_UUID)
+      p @urologin.get_required_credentials
     end
 
     def close
@@ -37,7 +40,7 @@ module Runivedo
     def onmessage(message)
       ro_id = message.read
       raise "ro_id invalid" unless @remote_objects.has_key?(ro_id)
-      @remote_objects[ro_id].receive(message)
+      @remote_objects[ro_id].send(:receive, message)
     end
   end
 end

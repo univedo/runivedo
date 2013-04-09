@@ -1,19 +1,13 @@
 require 'rspec'
 require 'runivedo'
+require 'timeout'
 
 include Runivedo::Protocol
 
-class MockStream
-  attr_reader :sent_data, :recv_data
-
-  def initialize
-    @sent_data = []
+RSpec.configure do |c|
+  c.around(:each) do |example|
+    Timeout::timeout(1) {
+      example.run
+    }
   end
-
-  def send_message(&block)
-    yield @sent_data
-  end
-end
-
-RSpec.configure do |config|
 end
