@@ -35,11 +35,9 @@ module Runivedo
     end
 
     def onmessage
-      operation = @stream.receive
-      case operation
-      when OPERATION_ANSWER_CALL
-        @remote_objects[@stream.receive].receive_return
-      end
+      ro_id = @stream.receive
+      raise "ro_id invalid" unless @remote_objects.has_key?(ro_id)
+      @remote_objects[ro_id].receive
     end
   end
 end
