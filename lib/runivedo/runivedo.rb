@@ -9,7 +9,6 @@ module Runivedo
       @stream.onmessage = method(:onmessage)
       opened = Event.new
       @stream.connect(url) do
-        puts "connected"
         opened.signal
       end
       opened.wait
@@ -35,7 +34,6 @@ module Runivedo
 
     def onclose(event)
       puts "closed"
-      p event
       exit
     end
 

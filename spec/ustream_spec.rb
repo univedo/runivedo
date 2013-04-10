@@ -29,6 +29,11 @@ describe Runivedo::UStream do
       message << "foobar"
       message.buffer.should == "\x1e\x06\x00\x00\x00foobar"
     end
+
+    it "sends maps" do
+      message << {"foo" => true, "bar" => false}
+      message.buffer.should == "\x3d\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x01\x01\x1e\x03\x00\x00\x00bar\x01\x00"
+    end
   end
 
   describe "receiving" do
@@ -106,6 +111,11 @@ describe Runivedo::UStream do
     it "works for strings" do
       message << "foobar"
       message.read.should == "foobar"
+    end
+
+    it "works for maps" do
+      message << {"foo" => 1, "foo" => 2}
+      message.read.should == {"foo" => 1, "foo" => 2}
     end
   end
 end

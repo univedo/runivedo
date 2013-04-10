@@ -11,20 +11,7 @@ module Runivedo
       end
 
       def <<(obj)
-        @buffer += case obj
-        when nil
-          "\x00"
-        when TrueClass, FalseClass
-          [1, obj ? 1 : 0].pack("CC")
-        when Fixnum
-          [13, obj].pack("Cq")
-        when Float
-          [21, obj].pack("Cd")
-        when String
-          [30, obj.bytesize, obj].pack("CLa*")
-        else
-          raise "sending not supported for class #{obj.class}"
-        end
+        @buffer += send_impl(obj)
       end
 
       def read
@@ -75,6 +62,25 @@ module Runivedo
 
       private
 
+      def send_impl(obj)
+        case obj
+        when nil
+          "\x00"
+        when TrueClass, FalseClass
+          [1, obj ? 1 : 0].pack("CC")
+        when Fixnum
+          [13, obj].pack("Cq")
+        when Float
+          [21, obj].pack("Cd")
+        when String
+          [30, obj.bytesize, obj].pack("CLa*")
+        when Hash
+          [61, obj.count].pack("CL") + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
+        else
+          raise "sending not supported for class #{obj.class}"
+        end
+      end
+
       def get_bytes(count, pack_opts)
         if @buffer.size < count
           raise "message finished"
@@ -91,14 +97,16 @@ module Runivedo
     end
 
     def connect(url, &block)
-      EM.run {
-        @ws = Faye::WebSocket::Client.new(url)
-        @ws.onopen = block
-        @ws.onmessage = lambda do |e|
-          @onmessage.call(Message.new(e.data))
-        end
-        @ws.onclose = @onclose
-      }
+      Thread.new do
+        EM.run {
+          @ws = Faye::WebSocket::Client.new(url)
+          @ws.onopen = block
+          @ws.onmessage = lambda do |e|
+            @onmessage.call(Message.new(e.data))
+          end
+          @ws.onclose = @onclose
+        }
+      end
     end
 
     def send_message(&block)

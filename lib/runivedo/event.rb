@@ -10,14 +10,14 @@ module Runivedo
 
     def wait
       @mutex.synchronize do
-        @cond.wait(@mutex) while !@set
+        @cond.wait(@mutex) unless @set
       end
     end
 
     def signal
       @mutex.synchronize do
         @set = true
-        @cond.signal
+        @cond.broadcast
       end
     end
   end
