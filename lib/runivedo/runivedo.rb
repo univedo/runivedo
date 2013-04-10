@@ -33,8 +33,9 @@ module Runivedo
 
     private
 
-    def onclose
+    def onclose(event)
       puts "closed"
+      p event
       exit
     end
 

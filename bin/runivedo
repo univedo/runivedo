@@ -72,8 +72,7 @@ puts "Connected."
 
 while line = readline_wrapper
   break if line.nil?
-  line.strip!
-  next if line.empty?
+  next if line.strip!.empty?
   case line
   when "q", "quit", "exit"
     break
@@ -102,6 +101,8 @@ while line = readline_wrapper
     end
   end
 end
+
+runivedo.close
 
 puts
 puts "Bye"
