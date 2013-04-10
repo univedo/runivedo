@@ -2,27 +2,26 @@ module Runivedo
   class Runivedo
     include Protocol
 
-    def initialize(args = {})
-      raise "no url provided" unless args.has_key? :url
+    def initialize(url, args = {})
       @remote_objects = {}
       @stream = UStream.new
       @stream.onclose = method(:onclose)
       @stream.onmessage = method(:onmessage)
       opened = Event.new
-      @stream.connect(args[:url]) do
+      @stream.connect(url) do
         puts "connected"
         opened.signal
       end
       opened.wait
-      @urologin = build_ro(UROLOGIN_NAME, app: DOORKEEPER_UUID)
-      p @urologin.get_required_credentials
+      if args.has_key?(:auth)
+        @urologin = build_ro(UROLOGIN_NAME, app: DOORKEEPER_UUID)
+        p @urologin.get_required_credentials
+      end
     end
 
     def close
       @stream.close
     end
-
-    private
 
     def build_ro(name, app: app)
       @next_id ||= 1
@@ -31,6 +30,8 @@ module Runivedo
       @next_id += 2
       ro
     end
+
+    private
 
     def onclose
       puts "closed"
