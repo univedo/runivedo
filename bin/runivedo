@@ -46,12 +46,9 @@ Readline.completion_proc = comp
 options = {}
 op = OptionParser.new do |opts|
   opts.banner = "Usage: runivedo [options] <url>"
-  options[:user] = "test"
-  opts.on('-u', '--user USER', "Username (default 'test')") { |user| options[:user] = user }
-  options[:password] = ""
-  opts.on('-p', '--password PASSWORD', "Password (default '')") { |password| options[:password] = password }
-  options[:uts] = "app.uts"
-  opts.on('-f', '--uts UTS', "UTS file (default 'app.uts')") { |uts| options[:uts] = uts }
+  opts.on('-u', '--user USER', "Username") { |user| options[:user] = user }
+  opts.on('-p', '--password PASSWORD', "Password") { |password| options[:password] = password }
+  opts.on('-a', '--app UUID', "App UUID") { |uts| options[:uts] = uts }
   opts.on('-v', "--version", "Show version") do
     puts "Runivedo #{VERSION}"
     exit
@@ -67,15 +64,10 @@ if ARGV.count == 0
   puts op
   exit
 end
-options[:url] = ARGV[0]
-begin
-  options[:uts] = IO.read(options[:uts])
-rescue
-  puts "Could not read #{options[:uts]}, continuing without.".color(:yellow)
-  options[:uts] = ""
-end
 
-runivedo = Runivedo::Runivedo.new(options)
+options[:url] = ARGV[0]
+
+runivedo = Runivedo::Runivedo.new(options[:url])
 puts "Connected."
 
 while line = readline_wrapper
