@@ -1,5 +1,4 @@
-require 'faye/websocket'
-require 'eventmachine'
+require 'rfc-ws-client'
 
 module Runivedo
   class UStream
@@ -97,22 +96,17 @@ module Runivedo
     end
 
     def connect(url, &block)
+      @ws = RfcWebSocket::WebSocket.new(url)
       Thread.new do
-        EM.run {
-          @ws = Faye::WebSocket::Client.new(url)
-          @ws.onopen = block
-          @ws.onmessage = lambda do |e|
-            @onmessage.call(Message.new(e.data))
-          end
-          @ws.onclose = @onclose
-        }
+        msg, binary = @ws.receive
+        @onmessage.call(Message.new(msg))
       end
     end
 
     def send_message(&block)
       m = Message.new
       block.call(m)
-      @ws.send(m.buffer)
+      @ws.send_message(m.buffer, true)
     end
 
     def close
