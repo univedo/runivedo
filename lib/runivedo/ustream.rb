@@ -13,6 +13,10 @@ module Runivedo
         @buffer += send_impl(obj)
       end
 
+      def has_data?
+        @buffer.size > 0
+      end
+
       def read
         type = get_bytes(1, "C")
         case type
@@ -54,6 +58,10 @@ module Runivedo
         when 61
           count = get_bytes(4, "L")
           Hash[count.times.map { [read, read] }]
+        when 45
+          thread_id = get_bytes(4, "L")
+          read
+          thread_id
         else
           raise "unsupported type #{type}"
         end
@@ -88,25 +96,26 @@ module Runivedo
       end
     end
 
-    attr_accessor :onmessage, :onclose
+    attr_accessor :onmessage
     
     def initialize
       @onmessage = lambda {}
-      @onclose = lambda {}
     end
 
     def connect(url, &block)
       @ws = RfcWebSocket::WebSocket.new(url)
       Thread.new do
-        msg, binary = @ws.receive
-        @onmessage.call(Message.new(msg))
+        loop do
+          msg, binary = @ws.receive
+          @onmessage.call(Message.new(msg))
+        end
       end
     end
 
     def send_message(&block)
       m = Message.new
       block.call(m)
-      @ws.send_message(m.buffer, true)
+      @ws.send_message(m.buffer, binary: true)
     end
 
     def close
