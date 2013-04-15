@@ -86,6 +86,11 @@ describe Runivedo::UStream do
       message.instance_variable_set(:@buffer, "\x3d\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x0a\x01\x1e\x03\x00\x00\x00bar\x0a\x02")
       message.read.should == {"foo" => 1, "bar" => 2}
     end
+
+    it "receives remote object ids" do
+      message.instance_variable_set(:@buffer, "\x2d\x2a\x00\x00\x00\x1e\x03\x00\x00\x00foo")
+      message.read.should == 42
+    end
   end
 
   describe "sending and receiving" do
