@@ -1,7 +1,7 @@
 require 'rfc-ws-client'
 
 module Runivedo
-  class UStream
+  class Stream
     class Message
       attr_accessor :buffer
 

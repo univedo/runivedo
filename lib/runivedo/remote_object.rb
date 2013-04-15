@@ -6,8 +6,8 @@ module Runivedo
 
     attr_accessor :id
 
-    def initialize(stream: stream, connection: connection, id: id)
-      @stream = stream
+    def initialize(connection: connection, id: id)
+      @stream = connection.stream
       @connection = connection
       @connection.register_ro(id, self)
       @id = id
@@ -15,9 +15,9 @@ module Runivedo
       @calls = {}
     end
     
-    def method_missing(name, *args)
-      call_rom(name.to_s.camelize(:lower), *args)
-    end
+    # def method_missing(name, *args)
+    #   call_rom(name.to_s.camelize(:lower), *args)
+    # end
 
     def call_rom(name, *args)
       event = Event.new
@@ -39,7 +39,7 @@ module Runivedo
       when 0
         message.read
       when 1
-        RemoteObject.new(stream: @stream, connection: @connection, id: message.read)
+        RemoteObject.new(connection: @connection, id: message.read)
       else
         raise "got message status #{status}" unless status == 0
       end

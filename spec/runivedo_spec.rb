@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe Runivedo::Runivedo do
+describe Runivedo::Connection do
   it "handshakes" do
     
   end

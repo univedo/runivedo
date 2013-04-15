@@ -1,8 +1,8 @@
 require "spec_helper"
 
-describe Runivedo::UStream do
+describe Runivedo::Stream do
   describe "sending" do
-    let(:message) { Runivedo::UStream::Message.new }
+    let(:message) { Runivedo::Stream::Message.new }
 
     it "sends null" do
       message << nil
@@ -42,7 +42,7 @@ describe Runivedo::UStream do
   end
 
   describe "receiving" do
-    let(:message) { Runivedo::UStream::Message.new }
+    let(:message) { Runivedo::Stream::Message.new }
 
     it "receives null" do
       message.instance_variable_set(:@buffer, "\x00")
@@ -94,7 +94,7 @@ describe Runivedo::UStream do
   end
 
   describe "sending and receiving" do
-    let(:message) { Runivedo::UStream::Message.new }
+    let(:message) { Runivedo::Stream::Message.new }
 
     it "works for null" do
       message << nil

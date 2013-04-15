@@ -67,7 +67,7 @@ end
 
 options[:url] = ARGV[0]
 
-runivedo = Runivedo::Runivedo.new(options[:url])
+runivedo = Runivedo::Connection.new(options[:url])
 puts "Connected."
 
 while line = readline_wrapper
