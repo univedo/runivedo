@@ -12,16 +12,10 @@ end
 
 describe Runivedo::RemoteObject do
   let(:stream) { MockStream.new }
-  let(:ro) { Runivedo::RemoteObject.new(stream: stream, id: 42, app: 'appname', name: 'roname') }
-
-  it 'sends instanciation' do
-    ro
-    stream.sent_data.should == [42, 4, 'appname', 'roname']
-  end
+  let(:ro) { Runivedo::RemoteObject.new(stream: stream, connection: nil, id: 42) }
 
   it 'does rom calls' do
     ro
-    stream.sent_data.clear
     msg = double(:msg)
     msg.stub(:read).and_return(2, 0, 0, 42)
     stream.callback = lambda {ro.send(:receive, msg)}

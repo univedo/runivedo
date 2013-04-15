@@ -42,6 +42,9 @@ module Runivedo
       end
     end
 
+    def notification(name, *args)
+    end
+
     private
 
     def receive(message)
@@ -56,7 +59,7 @@ module Runivedo
         name = message.read
         args = []
         args << message.read while message.has_data?
-        
+        notification(name, *args)
       else
         raise "unknown opcode #{opcode}"
       end
