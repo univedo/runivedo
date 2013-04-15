@@ -6,7 +6,6 @@ describe Runivedo::RemoteObject do
   let(:ro) { Runivedo::RemoteObject.new(connection: connection, id: 2) }
 
   it 'does rom calls' do
-    ro
     stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 0, 0, 42))}
     ro.call_rom('foo').should == 42
     stream.sent_data.should == [2, 1, 0, 'foo']
@@ -18,7 +17,6 @@ describe Runivedo::RemoteObject do
   end
 
   it 'returns new remote objects' do
-    ro
     stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 0, 1, 42, ""))}
     new_ro = ro.call_rom('foo')
     new_ro.id.should == 42
