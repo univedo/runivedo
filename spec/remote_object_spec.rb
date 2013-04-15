@@ -1,29 +1,5 @@
 require "spec_helper"
 
-class MockStream
-  attr_accessor :callback, :sent_data
-
-  def send_message(&block)
-    @sent_data ||= []
-    yield @sent_data
-    @callback.call if @callback
-  end
-end
-
-class MockMessage
-  def initialize(*data)
-    @data = data
-  end
-
-  def read
-    @data.shift
-  end
-
-  def has_data?
-    @data.count > 0
-  end
-end
-
 describe Runivedo::RemoteObject do
   let(:stream) { MockStream.new }
   let(:connection) { c = double(:connection); c.stub(:register_ro); c.stub(:stream).and_return(stream); c }
