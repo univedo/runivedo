@@ -4,9 +4,12 @@ module Runivedo
   class RemoteObject
     include Protocol
 
+    attr_accessor :id
+
     def initialize(stream: stream, connection: connection, id: id)
       @stream = stream
       @connection = connection
+      @connection.register_ro(id, self)
       @id = id
       @call_id = 0
       @calls = {}
@@ -36,7 +39,7 @@ module Runivedo
       when 0
         message.read
       when 1
-        @connection.build_ro(message.read)
+        RemoteObject.new(stream: @stream, connection: @connection, id: message.read)
       else
         raise "got message status #{status}" unless status == 0
       end

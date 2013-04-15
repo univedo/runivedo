@@ -9,7 +9,7 @@ module Runivedo
       @stream = UStream.new
       @stream.onmessage = method(:onmessage)
       @stream.connect(url)
-      @urologin = build_ro(0)
+      @urologin = RemoteObject.new(stream: @stream, connection: self, id: 0)
       @connection = @urologin.get_connection(args)
     end
 
@@ -17,11 +17,11 @@ module Runivedo
       @stream.close
     end
 
-    def build_ro(id)
-      @remote_objects[id] = RemoteObject.new(stream: @stream, connection: self, id: id)
-    end
-
     private
+
+    def register_ro(id, obj)
+      @remote_objects[id] = obj
+    end
 
     def onmessage(message)
       ro_id = message.read

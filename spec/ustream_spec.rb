@@ -30,6 +30,11 @@ describe Runivedo::UStream do
       message.buffer.should == "\x1e\x06\x00\x00\x00foobar"
     end
 
+    it "sends arrays" do
+      message << %w(foo bar)
+      message.buffer.should == "\x3c\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x1e\x03\x00\x00\x00bar"
+    end
+
     it "sends maps" do
       message << {"foo" => true, "bar" => false}
       message.buffer.should == "\x3d\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x01\x01\x1e\x03\x00\x00\x00bar\x01\x00"
@@ -72,7 +77,7 @@ describe Runivedo::UStream do
       message.read.should == "foobar"
     end
 
-    it "receives lists" do
+    it "receives arrays" do
       message.instance_variable_set(:@buffer, "\x3c\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x1e\x03\x00\x00\x00bar")
       message.read.should == %w(foo bar)
     end
@@ -111,6 +116,11 @@ describe Runivedo::UStream do
     it "works for strings" do
       message << "foobar"
       message.read.should == "foobar"
+    end
+
+    it "works for arrays" do
+      message << %w(foo bar)
+      message.read.should == %w(foo bar)
     end
 
     it "works for maps" do
