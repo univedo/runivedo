@@ -54,7 +54,7 @@ module Runivedo
 
     @@ro_classes = {}
 
-    def self.register_ro_class(klass, name)
+    def self.register_ro_class(name, klass)
       @@ro_classes[name] = klass
     end
 
