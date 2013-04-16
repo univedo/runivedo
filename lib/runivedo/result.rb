@@ -7,7 +7,11 @@ module Runivedo
       super(*args)
       @rows = Queue.new
       @finished = false
-      @numRows = -1
+      @numRows = Future.new
+    end
+
+    def number_of_rows
+      @numRows.get
     end
 
     private
