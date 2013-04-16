@@ -5,19 +5,19 @@ describe Runivedo::Result do
   let(:result) { Runivedo::Result.new(connection: connection) }
 
   it 'gets number of rows' do
-    result.send(:notification, 'finished', 42)
+    result.send(:notification, 'setNTuplesAffected', 42)
     result.number_of_rows.should == 42
   end
 
   it 'gets rows' do
-    result.send(:notification, 'nextRow', %w(foo bar))
-    result.send(:notification, 'nextRow', %w(fu baz))
-    result.send(:notification, 'finished')
+    result.send(:notification, 'appendTuple', %w(foo bar))
+    result.send(:notification, 'appendTuple', %w(fu baz))
+    result.send(:notification, 'setCompleted')
     result.to_a.should == [%w(foo bar), %w(fu baz)]
   end
 
   it 'gets errors' do
-    result.send(:notification, 'error')
-    lambda { result.to_a.should }.should raise_error(Exception)
+    result.send(:notification, 'setErrorMessage', 'foobar')
+    lambda { result.to_a.should }.should raise_error(Exception, /foobar/)
   end
 end

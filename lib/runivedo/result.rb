@@ -24,14 +24,17 @@ module Runivedo
 
     def notification(name, *args)
       case name
-      when 'nextRow'
+      when 'appendTuple'
         @rows << args.first
-      when 'error'
-        @rows << RunivedoSqlError.new("error executing query")
-      when 'finished'
-        num_rows, dummy = *args
-        @num_rows.complete(num_rows)
+      when 'setErrorMessage'
+        @rows << RunivedoSqlError.new("error executing query: #{args.first}")
+      when 'setNTuplesAffected'
+        @num_rows.complete(args.first)
+      when 'setCompleted'
         @rows << nil
+      else
+        puts "received notification #{name}"
+        p args
       end
     end
   end
