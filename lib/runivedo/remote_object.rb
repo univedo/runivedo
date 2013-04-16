@@ -9,16 +9,12 @@ module Runivedo
     def initialize(connection: connection, id: id)
       @stream = connection.stream
       @connection = connection
-      @connection.register_ro(id, self)
+      @connection.register_ro_instance(id, self)
       @id = id
       @call_id = 0
       @calls = {}
     end
     
-    # def method_missing(name, *args)
-    #   call_rom(name.to_s.camelize(:lower), *args)
-    # end
-
     def call_rom(name, *args)
       event = Event.new
       call_id = @call_id
@@ -39,13 +35,31 @@ module Runivedo
       when 0
         message.read
       when 1
-        RemoteObject.new(connection: @connection, id: message.read)
+        thread_id, name = message.read
+        klass = @@ro_classes[name] || RemoteObject
+        klass.new(connection: @connection, id: thread_id)
       else
         raise "got message status #{status}" unless status == 0
       end
     end
 
     def notification(name, *args)
+    end
+
+    module MethodMissing
+      def method_missing(name, *args)
+        call_rom(name.to_s.camelize(:lower), *args)
+      end
+    end
+
+    @@ro_classes = {}
+
+    def self.register_ro_class(klass, name)
+      @@ro_classes[name] = klass
+    end
+
+    def self.unregister_ro_class(name)
+      @@ro_classes.delete(name)
     end
 
     private

@@ -23,7 +23,7 @@ module Runivedo
 
     private
 
-    def register_ro(id, obj)
+    def register_ro_instance(id, obj)
       @remote_objects[id] = obj
     end
 

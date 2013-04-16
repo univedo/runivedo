@@ -59,9 +59,7 @@ module Runivedo
           count = get_bytes(4, "L")
           Hash[count.times.map { [read, read] }]
         when 45
-          thread_id = get_bytes(4, "L")
-          read
-          thread_id
+          [get_bytes(4, "L"), read]
         else
           raise "unsupported type #{type}"
         end

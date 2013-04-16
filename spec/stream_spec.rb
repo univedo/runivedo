@@ -89,7 +89,7 @@ describe Runivedo::Stream do
 
     it "receives remote object ids" do
       message.instance_variable_set(:@buffer, "\x2d\x2a\x00\x00\x00\x1e\x03\x00\x00\x00foo")
-      message.read.should == 42
+      message.read.should == [42, "foo"]
     end
   end
 
