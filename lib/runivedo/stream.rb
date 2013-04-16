@@ -1,4 +1,5 @@
 require 'rfc-ws-client'
+require 'date'
 
 module Runivedo
   class Stream
@@ -52,6 +53,12 @@ module Runivedo
           chars = []
           count.times { chars << get_bytes(2, "S") }
           chars.pack("U*")
+        when 41
+          [get_bytes(4, "L"), get_bytes(8, "Q")]
+        when 42
+          Base64.encode64(get_bytes(16, "a*"))
+        when 51
+          Time.at(get_bytes(8, "q") / 1e6).to_datetime
         when 60
           count = get_bytes(4, "L")
           count.times.map { read }

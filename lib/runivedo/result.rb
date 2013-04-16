@@ -7,10 +7,15 @@ module Runivedo
       super(*args)
       @rows = Queue.new
       @num_rows = Future.new
+      @columns = Future.new
     end
 
-    def number_of_rows
+    def num_affected_rows
       @num_rows.get
+    end
+
+    def columns
+      @columns.get
     end
 
     def each(&block)
@@ -24,17 +29,19 @@ module Runivedo
 
     def notification(name, *args)
       case name
+      when 'setResultToField'
+        p args
+        @columns.complete(args.first.map { |f| f[1] })
       when 'appendTuple'
         @rows << args.first
-      when 'setErrorMessage'
-        @rows << RunivedoSqlError.new("error executing query: #{args.first}")
       when 'setNTuplesAffected'
         @num_rows.complete(args.first)
       when 'setCompleted'
         @rows << nil
+      when 'setErrorMessage'
+        @rows << RunivedoSqlError.new("error executing query: #{args.first}")
       else
         puts "received notification #{name}"
-        p args
       end
     end
   end

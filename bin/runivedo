@@ -48,7 +48,7 @@ op = OptionParser.new do |opts|
   opts.banner = "Usage: runivedo [options] <url>"
   opts.on('-u', '--user USER', "Username") { |user| options[:user] = user }
   opts.on('-p', '--password PASSWORD', "Password") { |password| options[:password] = password }
-  opts.on('-a', '--app UUID', "App UUID") { |uts| options[:uts] = uts }
+  opts.on('-a', '--app UUID', "App UUID") { |app| options[:app] = app }
   opts.on('-v', "--version", "Show version") do
     puts "Runivedo #{VERSION}"
     exit
@@ -68,11 +68,13 @@ end
 options[:url] = ARGV[0]
 
 runivedo = Runivedo::Connection.new(options[:url])
+perspective = runivedo.get_perspective(options[:app])
 puts "Connected."
 
 while line = readline_wrapper
   break if line.nil?
-  next if line.strip!.empty?
+  line.strip!
+  next if line.empty?
   case line
   when "q", "quit", "exit"
     break
@@ -84,14 +86,17 @@ while line = readline_wrapper
     puts "TODO"
   else
     begin
-      result = runivedo.execute(line)
-      arr = result.rows
+      query = perspective.query
+      query.prepare(line)
+      result = query.execute
+      arr = result.to_a
       if arr.count > 0
         col_count = arr[0].count
         puts Terminal::Table.new rows: arr, headings: result.columns.map(&:bright)
         puts "#{pluralize("row", arr.count)} returned.".color(:green)
+      else
+        puts "#{pluralize("row", result.num_affected_rows)} affected.".color(:green)
       end
-      puts "#{pluralize("row", result.affected_rows)} affected.".color(:green)
     rescue RunivedoSqlError => e
       puts "SQL Error: #{e.to_s}".color(:red)
     rescue => e
