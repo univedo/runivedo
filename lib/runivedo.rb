@@ -1,7 +1,7 @@
 require "runivedo/version"
 require "runivedo/protocol"
 require "runivedo/error"
-require "runivedo/event"
+require "runivedo/future"
 require "runivedo/stream"
 require "runivedo/remote_object"
 require "runivedo/result"

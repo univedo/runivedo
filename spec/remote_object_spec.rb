@@ -33,7 +33,7 @@ describe Runivedo::RemoteObject do
     stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 0, 1, [42, "Foo"]))}
     new_ro = ro.call_rom('foo')
     new_ro.id.should == 42
-    new_ro.class.should == Foo
+    new_ro.should be_a Foo
     Runivedo::RemoteObject.unregister_ro_class('Foo')
   end
 
@@ -41,6 +41,6 @@ describe Runivedo::RemoteObject do
     stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 0, 1, [42, "UResult"]))}
     new_ro = ro.call_rom('foo')
     new_ro.id.should == 42
-    new_ro.class.should == Runivedo::Result
+    new_ro.should be_a Runivedo::Result
   end
 end

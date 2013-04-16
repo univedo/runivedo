@@ -16,10 +16,10 @@ module Runivedo
     end
     
     def call_rom(name, *args)
-      event = Event.new
+      future = Future.new
       call_id = @call_id
+      @calls[call_id] = future
       @call_id += 1
-      @calls[call_id] = {event: event}
       @stream.send_message do |m|
         m << @id
         m << OPERATION_CALL_ROM
@@ -27,8 +27,7 @@ module Runivedo
         m << name
         args.each {|a| m << a}
       end
-      event.wait
-      message = @calls[call_id][:message]
+      message = future.get
       @calls.delete(call_id)
       status = message.read
       case status
@@ -41,9 +40,6 @@ module Runivedo
       else
         raise "got message status #{status}" unless status == 0
       end
-    end
-
-    def notification(name, *args)
     end
 
     module MethodMissing
@@ -64,14 +60,16 @@ module Runivedo
 
     private
 
+    def notification(name, *args)
+    end
+
     def receive(message)
       opcode = message.read
       case opcode
       when OPERATION_ANSWER_CALL
         call_id = message.read
         raise "unknown call id" unless @calls.has_key?(call_id)
-        @calls[call_id][:message] = message
-        @calls[call_id][:event].signal
+        @calls[call_id].complete(message)
       when OPERATION_NOTIFY
         name = message.read
         args = []

@@ -1,22 +1,25 @@
 require 'thread'
 
 module Runivedo
-  class Event
+  class Future
     def initialize
       @mutex = Mutex.new
       @cond = ConditionVariable.new
-      @set = false
+      @completed = false
+      @value = nil
     end
 
-    def wait
+    def get
       @mutex.synchronize do
-        @cond.wait(@mutex) unless @set
+        @cond.wait(@mutex) unless @completed
       end
+      @value
     end
 
-    def signal
+    def complete(value)
       @mutex.synchronize do
-        @set = true
+        @completed = true
+        @value = value
         @cond.broadcast
       end
     end
