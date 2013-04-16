@@ -9,7 +9,7 @@ module Runivedo
     def initialize(connection: connection, id: id)
       @stream = connection.stream
       @connection = connection
-      @connection.register_ro_instance(id, self)
+      @connection.send(:register_ro_instance, id, self)
       @id = id
       @call_id = 0
       @calls = {}
@@ -42,11 +42,11 @@ module Runivedo
       end
     end
 
-    module MethodMissing
+    # module MethodMissing
       def method_missing(name, *args)
         call_rom(name.to_s.camelize(:lower), *args)
       end
-    end
+    # end
 
     @@ro_classes = {}
 

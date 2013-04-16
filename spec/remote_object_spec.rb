@@ -38,7 +38,7 @@ describe Runivedo::RemoteObject do
   end
 
   it 'receives results' do
-    stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 0, 1, [42, "UResult"]))}
+    stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 0, 1, [42, "result"]))}
     new_ro = ro.call_rom('foo')
     new_ro.id.should == 42
     new_ro.should be_a Runivedo::Result
