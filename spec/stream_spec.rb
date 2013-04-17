@@ -39,6 +39,12 @@ describe Runivedo::Stream do
       message << {"foo" => true, "bar" => false}
       message.buffer.should == "\x3d\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x01\x01\x1e\x03\x00\x00\x00bar\x01\x00"
     end
+
+    it 'sends uuids' do
+      uuid = UUIDTools::UUID.random_create
+      message << uuid
+      message.buffer.should == "\x2a" + uuid.raw
+    end
   end
 
   describe "receiving" do
@@ -91,6 +97,22 @@ describe Runivedo::Stream do
       message.instance_variable_set(:@buffer, "\x2d\x2a\x00\x00\x00\x1e\x03\x00\x00\x00foo")
       message.read.should == [42, "foo"]
     end
+
+    it 'receives records' do
+      message.instance_variable_set(:@buffer, "\x29\x01\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00")
+      message.read.should == [1, 2]
+    end
+
+    it 'receives datetimes' do
+      message.instance_variable_set(:@buffer, "\x33\x40\x7F\xFF\x0D\x8B\xDA\x04\x00")
+      message.read.should == Time.at(1366190677).to_datetime
+    end
+
+    it 'receives uuids' do
+      uuid = UUIDTools::UUID.random_create
+      message.instance_variable_set(:@buffer, "\x2a" + uuid.raw)
+      message.read.should == uuid
+    end
   end
 
   describe "sending and receiving" do
@@ -131,6 +153,12 @@ describe Runivedo::Stream do
     it "works for maps" do
       message << {"foo" => 1, "foo" => 2}
       message.read.should == {"foo" => 1, "foo" => 2}
+    end
+
+    it "works for uuids" do
+      uuid = UUIDTools::UUID.random_create
+      message << uuid
+      message.read.should == uuid
     end
   end
 end

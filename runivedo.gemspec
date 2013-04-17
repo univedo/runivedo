@@ -23,6 +23,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency("term-ansicolor")
   gem.add_dependency("readline-history-restore")
   gem.add_dependency("terminal-table")
+  gem.add_dependency("uuidtools")
   gem.add_development_dependency('rspec')
   gem.add_development_dependency('rspec_junit_formatter')
   gem.add_development_dependency('fuubar')

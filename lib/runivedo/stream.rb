@@ -1,5 +1,6 @@
 require 'rfc-ws-client'
 require 'date'
+require 'uuidtools'
 
 module Runivedo
   class Stream
@@ -56,7 +57,9 @@ module Runivedo
         when 41
           [get_bytes(4, "L"), get_bytes(8, "Q")]
         when 42
-          Base64.encode64(get_bytes(16, "a*"))
+          UUIDTools::UUID.parse_raw(get_bytes(16, "a*"))
+        when 45
+          [get_bytes(4, "L"), read]
         when 51
           Time.at(get_bytes(8, "q") / 1e6).to_datetime
         when 60
@@ -65,8 +68,6 @@ module Runivedo
         when 61
           count = get_bytes(4, "L")
           Hash[count.times.map { [read, read] }]
-        when 45
-          [get_bytes(4, "L"), read]
         else
           raise "unsupported type #{type}"
         end
@@ -90,6 +91,8 @@ module Runivedo
           [60, obj.count].pack("CL") + obj.map{|e| send_impl(e)}.join
         when Hash
           [61, obj.count].pack("CL") + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
+        when UUIDTools::UUID
+          [42].pack("C") + obj.raw
         else
           raise "sending not supported for class #{obj.class}"
         end

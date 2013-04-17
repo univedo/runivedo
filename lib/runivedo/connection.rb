@@ -1,5 +1,5 @@
 module Runivedo
-  class Connection
+  class Connection < RemoteObject
     include Protocol
 
     attr_accessor :stream
@@ -9,8 +9,8 @@ module Runivedo
       @stream = Stream.new
       @stream.onmessage = method(:onmessage)
       @stream.connect(url)
-      @urologin = RemoteObject.new(connection: self, id: 0)
-      @connection_remote = @urologin.call_rom('getConnection', args)
+      urologin = RemoteObject.new(connection: self, id: 0)
+      @connection_remote = urologin.call_rom('getConnection', args)
     end
 
     def get_perspective(name)

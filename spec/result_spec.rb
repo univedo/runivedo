@@ -6,7 +6,7 @@ describe Runivedo::Result do
 
   it 'gets number of rows' do
     result.send(:notification, 'setNTuplesAffected', 42)
-    result.number_of_rows.should == 42
+    result.num_affected_rows.should == 42
   end
 
   it 'gets rows' do
