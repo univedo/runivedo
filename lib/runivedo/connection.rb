@@ -1,5 +1,5 @@
 module Runivedo
-  class Connection < RemoteObject
+  class Connection
     include Protocol
 
     attr_accessor :stream
