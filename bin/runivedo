@@ -89,7 +89,11 @@ while line = readline_wrapper
       query = perspective.query
       query.prepare(line)
       result = query.execute
-      arr = result.to_a
+      arr = result.to_a.map do |row|
+        row.map do |col|
+          col.nil? ? 'null ' : col.to_s
+        end
+      end
       if arr.count > 0
         col_count = arr[0].count
         puts Terminal::Table.new rows: arr, headings: result.columns.map(&:bright)
