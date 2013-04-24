@@ -3,28 +3,30 @@ lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'runivedo/version'
 
-Gem::Specification.new do |gem|
-  gem.name          = "runivedo"
-  gem.version       = Runivedo::VERSION
-  gem.authors       = ["Lucas Clemente"]
-  gem.email         = ["lucas@univedo.com"]
-  gem.summary       = %q{Ruby binding for Univedo}
-  gem.description   = %q{Ruby binding for Univedo, see https://github.com/lucas-clemente/runivedo for more information.}
-  gem.homepage      = "https://univedo.com/"
-  gem.license       = 'MIT'
+Gem::Specification.new do |spec|
+  spec.name          = "runivedo"
+  spec.version       = Runivedo::VERSION
+  spec.authors       = ["Lucas Clemente"]
+  spec.email         = ["lucas@univedo.com"]
+  spec.summary       = %q{Ruby binding for Univedo}
+  spec.description   = %q{Ruby binding for Univedo, see https://github.com/univedo/runivedo for more information.}
+  spec.homepage      = "https://github.com/univedo/runivedo"
+  spec.license       = 'MIT'
 
-  gem.files         = `git ls-files`.split($/)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.require_paths = ["lib"]
+  spec.files         = `git ls-files`.split($/)
+  spec.executables   = spec.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ["lib"]
 
-  gem.add_dependency("rfc-ws-client")
-  gem.add_dependency("active_support")
-  gem.add_dependency("term-ansicolor")
-  gem.add_dependency("readline-history-restore")
-  gem.add_dependency("terminal-table")
-  gem.add_dependency("uuidtools")
-  gem.add_development_dependency('rspec')
-  gem.add_development_dependency('rspec_junit_formatter')
-  gem.add_development_dependency('fuubar')
+  spec.add_dependency "rfc-ws-client"
+  spec.add_dependency "active_support"
+  spec.add_dependency "term-ansicolor"
+  spec.add_dependency "readline-history-restore"
+  spec.add_dependency "terminal-table"
+  spec.add_dependency "uuidtools"
+  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'rspec_junit_formatter'
+  spec.add_development_dependency 'fuubar'
+  spec.add_development_dependency "bundler"
+  spec.add_development_dependency "rake"
 end

@@ -50,6 +50,8 @@ module Runivedo
           ro.extend(MethodMissing)
           ro
         end
+      when 2
+        raise RunivedoSqlError.new(message.read)
       else
         raise "got message status #{status}" unless status == 0
       end
