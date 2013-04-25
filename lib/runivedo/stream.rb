@@ -85,8 +85,8 @@ module Runivedo
           [13, obj].pack("Cq")
         when Float
           [21, obj].pack("Cd")
-        when String
-          [30, obj.bytesize, obj].pack("CLa*")
+        when String, Symbol
+          [30, obj.to_s.bytesize, obj.to_s].pack("CLa*")
         when Array
           [60, obj.count].pack("CL") + obj.map{|e| send_impl(e)}.join
         when Hash

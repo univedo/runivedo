@@ -30,6 +30,11 @@ describe Runivedo::Stream do
       message.buffer.should == "\x1e\x06\x00\x00\x00foobar"
     end
 
+    it "sends symbols as strings" do
+      message << :foobar
+      message.buffer.should == "\x1e\x06\x00\x00\x00foobar"
+    end
+
     it "sends arrays" do
       message << %w(foo bar)
       message.buffer.should == "\x3c\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x1e\x03\x00\x00\x00bar"
