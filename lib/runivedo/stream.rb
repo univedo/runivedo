@@ -7,8 +7,13 @@ module Runivedo
     class Message
       attr_accessor :buffer
 
-      def initialize(buffer = "")
+      def initialize(buffer = "", connection = nil)
         @buffer = buffer
+        @connection = connection
+        @data = []
+        while @buffer.size > 0
+          @data << read_impl
+        end
       end
 
       def <<(obj)
@@ -16,10 +21,24 @@ module Runivedo
       end
 
       def has_data?
-        @buffer.size > 0
+        @data.size > 0
       end
 
       def read
+        raise 'message is empty' unless has_data?
+        @data.shift
+      end
+
+      private
+
+      def get_bytes(count, pack_opts)
+        if @buffer.size < count
+          raise "message finished"
+        end
+        @buffer.slice!(0, count).unpack(pack_opts)[0]
+      end
+
+      def read_impl
         type = get_bytes(1, "C")
         case type
         when 0
@@ -59,21 +78,21 @@ module Runivedo
         when 42
           UUIDTools::UUID.parse_raw(get_bytes(16, "a*"))
         when 45
-          [get_bytes(4, "L"), read]
+          thread_id = get_bytes(4, "L")
+          name = read_impl
+          RemoteObject.create_ro(thread_id: thread_id, connection: @connection, name: name)
         when 51
           Time.at(get_bytes(8, "q") / 1e6).to_datetime
         when 60
           count = get_bytes(4, "L")
-          count.times.map { read }
+          count.times.map { read_impl }
         when 61
           count = get_bytes(4, "L")
-          Hash[count.times.map { [read, read] }]
+          Hash[count.times.map { [read_impl, read_impl] }]
         else
           raise "unsupported type #{type}"
         end
       end
-
-      private
 
       def send_impl(obj)
         case obj
@@ -97,18 +116,12 @@ module Runivedo
           raise "sending not supported for class #{obj.class}"
         end
       end
-
-      def get_bytes(count, pack_opts)
-        if @buffer.size < count
-          raise "message finished"
-        end
-        @buffer.slice!(0, count).unpack(pack_opts)[0]
-      end
     end
 
     attr_accessor :onmessage
     
-    def initialize
+    def initialize(connection)
+      @connection = connection
       @onmessage = lambda {}
     end
 
@@ -117,7 +130,7 @@ module Runivedo
       Thread.new do
         loop do
           msg, binary = @ws.receive
-          @onmessage.call(Message.new(msg))
+          @onmessage.call(Message.new(msg, @connection))
         end
       end
     end

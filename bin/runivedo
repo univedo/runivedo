@@ -11,6 +11,8 @@ require 'optparse'
 
 include Runivedo
 
+Thread.abort_on_exception = true
+
 def pluralize(singular, count)
   "#{count} #{singular}#{count != 1 ? 's' : ''}"
 end
@@ -69,6 +71,7 @@ options[:url] = ARGV[0]
 
 runivedo = Runivedo::Connection.new(options[:url])
 perspective = runivedo.get_perspective(options[:app])
+query = perspective.query
 puts "Connected."
 
 while line = readline_wrapper
@@ -86,9 +89,8 @@ while line = readline_wrapper
     puts "TODO"
   else
     begin
-      query = perspective.query
-      query.prepare(line)
-      result = query.execute
+      stmt = query.prepare(line)
+      result = stmt.execute
       arr = result.to_a.map do |row|
         row.map do |col|
           col.nil? ? 'null ' : col.to_s

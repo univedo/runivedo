@@ -15,8 +15,8 @@ module Runivedo
     end
 
     def initialize(connection: connection, id: id)
-      @stream = connection.stream
       @connection = connection
+      @stream = @connection.stream
       @connection.send(:register_ro_instance, id, self)
       @id = id
       @call_id = 0
@@ -41,15 +41,6 @@ module Runivedo
       case status
       when 0
         message.read
-      when 1
-        thread_id, name = message.read
-        if @@ro_classes.has_key?(name)
-          @@ro_classes[name].new(connection: @connection, id: thread_id)
-        else
-          ro = RemoteObject.new(connection: @connection, id: thread_id)
-          ro.extend(MethodMissing)
-          ro
-        end
       when 2
         raise RunivedoSqlError.new(message.read)
       else
@@ -63,6 +54,16 @@ module Runivedo
 
     def self.unregister_ro_class(name)
       @@ro_classes.delete(name)
+    end
+
+    def self.create_ro(name: name, connection: connection, thread_id: thread_id)
+      if @@ro_classes.has_key?(name)
+        @@ro_classes[name].new(connection: connection, id: thread_id)
+      else
+        ro = RemoteObject.new(connection: connection, id: thread_id)
+        ro.extend(MethodMissing)
+        ro
+      end
     end
 
     private

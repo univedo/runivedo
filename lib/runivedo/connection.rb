@@ -6,7 +6,7 @@ module Runivedo
 
     def initialize(url, args = {})
       @remote_objects = {}
-      @stream = Stream.new
+      @stream = Stream.new(self)
       @stream.onmessage = method(:onmessage)
       @stream.connect(url)
       urologin = RemoteObject.new(connection: self, id: 0)
