@@ -30,7 +30,6 @@ module Runivedo
     def notification(name, *args)
       case name
       when 'setResultToField'
-        p args
         @columns.complete(args.first.map { |f| f[1] })
       when 'appendTuple'
         @rows << args.first

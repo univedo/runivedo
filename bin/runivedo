@@ -90,6 +90,7 @@ while line = readline_wrapper
   else
     begin
       stmt = query.prepare(line)
+      cols = stmt.get_column_names
       result = stmt.execute
       arr = result.to_a.map do |row|
         row.map do |col|
@@ -98,7 +99,7 @@ while line = readline_wrapper
       end
       if arr.count > 0
         col_count = arr[0].count
-        puts Terminal::Table.new rows: arr, headings: result.columns.map(&:bright)
+        puts Terminal::Table.new rows: arr, headings: cols.map(&:bright)
         puts "#{pluralize("row", arr.count)} returned.".color(:green)
       else
         puts "#{pluralize("row", result.num_affected_rows)} affected.".color(:green)
