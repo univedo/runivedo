@@ -90,7 +90,7 @@ module Runivedo
           count = get_bytes(4, "L")
           Hash[count.times.map { [read_impl, read_impl] }]
         else
-          raise "unsupported type #{type}"
+          raise "received unsupported type #{type}"
         end
       end
 
