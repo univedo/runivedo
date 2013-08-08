@@ -69,7 +69,7 @@ end
 
 options[:url] = ARGV[0]
 
-runivedo = Runivedo::Connection.new(options[:url])
+runivedo = Runivedo::Connection.new(options[:url], 0x2610 => "marvin")
 perspective = runivedo.get_perspective(options[:app])
 query = perspective.query
 puts "Connected."

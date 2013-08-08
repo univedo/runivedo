@@ -10,11 +10,11 @@ module Runivedo
       @stream.onmessage = method(:onmessage)
       @stream.connect(url)
       urologin = RemoteObject.new(connection: self, id: 0)
-      @connection_remote = urologin.call_rom('getConnection', args)
+      @session_remote = urologin.call_rom('getSession', args)
     end
 
     def get_perspective(name)
-      @connection_remote.call_rom('getPerspective', name)
+      @session_remote.call_rom('getPerspective', name)
     end
 
     def close
