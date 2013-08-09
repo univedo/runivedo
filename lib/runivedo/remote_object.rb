@@ -86,5 +86,14 @@ module Runivedo
         raise "unknown opcode #{opcode}"
       end
     end
+
+    def close(reason)
+      puts "close: #{reason}"
+      reason = "connection closed" if reason.nil?
+      @calls.each do |id, call|
+        puts "failing call #{id}"
+        call.fail(reason)
+      end
+    end
   end
 end

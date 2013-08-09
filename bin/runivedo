@@ -83,7 +83,7 @@ while line = readline_wrapper
     break
   when "version", "info", "v"
     puts "Runivedo Shell #{VERSION}"
-    puts "(c) 2013 Univedo"
+    puts "(c) 2012-2013 Univedo"
   when "help", "h", "?"
     puts "Runivedo Shell #{VERSION} Help"
     puts "TODO"
@@ -110,6 +110,7 @@ while line = readline_wrapper
       puts "Caught exception:"
       puts e.to_s.color(:red)
       puts e.backtrace
+      exit 1
     end
   end
 end

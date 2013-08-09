@@ -5,7 +5,7 @@ module Runivedo
     def initialize
       @mutex = Mutex.new
       @cond = ConditionVariable.new
-      @completed = false
+      @completed = nil
       @value = nil
     end
 
@@ -13,12 +13,24 @@ module Runivedo
       @mutex.synchronize do
         @cond.wait(@mutex) unless @completed
       end
-      @value
+      if @completed == :success
+        @value
+      else
+        raise @value
+      end
+    end
+
+    def fail(exception)
+      @mutex.synchronize do
+        @completed = :exception
+        @value = exception
+        @cond.broadcast
+      end
     end
 
     def complete(value)
       @mutex.synchronize do
-        @completed = true
+        @completed = :success
         @value = value
         @cond.broadcast
       end

@@ -118,18 +118,29 @@ module Runivedo
       end
     end
 
-    attr_accessor :onmessage
+    attr_accessor :onmessage, :onclose
     
     def initialize(connection)
       @connection = connection
       @onmessage = lambda {}
+      @onclose = lambda {}
     end
 
     def connect(url, &block)
       @ws = RfcWebSocket::WebSocket.new(url)
       Thread.new do
         loop do
-          msg, binary = @ws.receive
+          ex = nil
+          begin
+            msg, binary = @ws.receive
+          rescue => e
+            ex = e
+          end
+          if msg.nil? || ex
+            p ex
+            @onclose.call(ex)
+            break
+          end
           @onmessage.call(Message.new(msg, @connection))
         end
       end
@@ -143,6 +154,10 @@ module Runivedo
 
     def close
       @ws.close
+    end
+
+    def closed?
+      @ws.closed?
     end
   end
 end

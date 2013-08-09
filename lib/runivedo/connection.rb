@@ -8,6 +8,7 @@ module Runivedo
       @remote_objects = {}
       @stream = Stream.new(self)
       @stream.onmessage = method(:onmessage)
+      @stream.onclose = method(:onclose)
       @stream.connect(url)
       urologin = RemoteObject.new(connection: self, id: 0)
       @session_remote = urologin.call_rom('getSession', args)
@@ -31,6 +32,13 @@ module Runivedo
       ro_id = message.read
       raise "ro_id invalid" unless @remote_objects.has_key?(ro_id)
       @remote_objects[ro_id].send(:receive, message)
+    end
+
+    def onclose(reason)
+      @remote_objects.each do |id, ro|
+        puts "closing ro #{id}"
+        ro.send(:close, reason)
+      end
     end
   end
 end

@@ -6,7 +6,5 @@ module Runivedo
     OPERATION_ANSWER_CALL = 2
     OPERATION_NOTIFY = 3
     OPERATION_DELETE = 4
-
-    UROLOGIN_NAME = "urologin"
   end
 end
