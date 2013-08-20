@@ -21,6 +21,7 @@ module Runivedo
       @id = id
       @call_id = 0
       @calls = {}
+      @notifications = {}
     end
     
     def call_rom(name, *args)
@@ -48,6 +49,10 @@ module Runivedo
       end
     end
 
+    def on(notification_name, &block)
+      @notifications[notification_name.to_s] = block
+    end
+
     def self.register_ro_class(name, klass)
       @@ro_classes[name] = klass
     end
@@ -68,7 +73,13 @@ module Runivedo
 
     private
 
-    def notification(name, *args); end
+    def notification(name, *args)
+      if @notifications.has_key?(name)
+        @notifications[name].call(*args)
+      else
+        puts "unknown notification #{name}"
+      end
+    end
 
     def receive(message)
       opcode = message.read
