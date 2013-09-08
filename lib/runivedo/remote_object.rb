@@ -1,5 +1,3 @@
-require 'active_support/inflector'
-
 module Runivedo
   class RemoteObject
     include Protocol
@@ -10,7 +8,8 @@ module Runivedo
 
     module MethodMissing
       def method_missing(name, *args)
-        call_rom(name.to_s.camelize(:lower), *args)
+        camelizedName = name.to_s.gsub(/_([a-z])/) { $1.capitalize}
+        call_rom(camelizedName, *args)
       end
     end
 
