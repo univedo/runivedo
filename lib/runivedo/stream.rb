@@ -141,6 +141,8 @@ module Runivedo
             @onclose.call(ex)
             break
           end
+          # TODO temporary workaround until univedo bug is fixed
+          next unless msg.size
           @onmessage.call(Message.new(msg, @connection))
         end
       end
