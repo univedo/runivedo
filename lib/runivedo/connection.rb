@@ -18,6 +18,10 @@ module Runivedo
       @session_remote.call_rom('getPerspective', name)
     end
 
+    def set_perspective(name)
+      @session_remote.call_rom('setPerspective', name)
+    end
+
     def close
       @stream.close
     end
