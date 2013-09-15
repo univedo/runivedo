@@ -41,7 +41,7 @@ module Runivedo
     def onclose(reason)
       @remote_objects.each do |id, ro|
         puts "closing ro #{id}"
-        ro.send(:close, reason)
+        ro.send(:onclose, reason)
       end
     end
   end

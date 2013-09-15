@@ -70,6 +70,13 @@ module Runivedo
       end
     end
 
+    def close
+      @stream.send_message do |m|
+        m << @id
+        m << OPERATION_CLOSE
+      end
+    end
+
     private
 
     def notification(name, *args)
@@ -97,7 +104,7 @@ module Runivedo
       end
     end
 
-    def close(reason)
+    def onclose(reason)
       puts "close: #{reason}"
       reason = "connection closed" if reason.nil?
       @calls.each do |id, call|
