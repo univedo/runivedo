@@ -2,7 +2,7 @@ module Runivedo
   class Connection
     include Protocol
 
-    attr_accessor :stream
+    attr :stream
 
     def initialize(url, args = {})
       @remote_objects = {}
@@ -30,21 +30,27 @@ module Runivedo
 
     def register_ro_instance(id, obj)
       @remote_objects[id] = obj
+      puts "ro: #{@remote_objects.count}"
     end
 
-    def unregister_ro_instance(id)
+    def close_ro(id, reason)
+      ro = @remote_objects[id]
       @remote_objects.delete(id)
+      ro.send(:onclose, reason)
+      puts "ro: #{@remote_objects.count}"
     end
 
     def onmessage(message)
       ro_id = message.read
-      raise "ro_id invalid" unless @remote_objects.has_key?(ro_id)
-      @remote_objects[ro_id].send(:receive, message)
+      # This mitigates a race condition where notifications are sent to a dead remote object
+      if @remote_objects.has_key?(ro_id)
+        @remote_objects[ro_id].send(:receive, message)
+      end
     end
 
     def onclose(reason)
       @remote_objects.each do |id, ro|
-        ro.send(:onclose, reason)
+        close_ro(id, reason)
       end
     end
   end

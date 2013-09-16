@@ -81,13 +81,11 @@ module Runivedo
     end
 
     def close
-      @mutex.synchronize do
-        @connection.stream.send_message do |m|
-          m << @id
-          m << OPERATION_CLOSE
-        end
-        onclose("closed")
+      @connection.stream.send_message do |m|
+        m << @id
+        m << OPERATION_DELETE
       end
+      @connection.send(:close_ro, @id, "closed")
     end
 
     private
