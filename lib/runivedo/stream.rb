@@ -130,19 +130,19 @@ module Runivedo
       @ws = RfcWebSocket::WebSocket.new(url)
       Thread.new do
         loop do
-          ex = nil
+          reason = nil
           begin
             msg, binary = @ws.receive
+            raise "connection closed" if msg.nil?
+            raise "received empty message" if msg.empty?
           rescue => e
-            ex = e
+            reason = e
           end
-          if msg.nil? || ex
-            p ex
-            @onclose.call(ex)
+          if reason
+            puts "closing stream: #{reason}"
+            @onclose.call(reason)
             break
           end
-          # TODO temporary workaround until univedo bug is fixed
-          next unless msg.size
           @onmessage.call(Message.new(msg, @connection))
         end
       end
@@ -156,10 +156,6 @@ module Runivedo
 
     def close
       @ws.close
-    end
-
-    def closed?
-      @ws.closed?
     end
   end
 end

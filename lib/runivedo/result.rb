@@ -10,12 +10,12 @@ module Runivedo
       @columns = Future.new
 
       self.on('setResultToField') { |*args| @columns.complete(args.first.map { |f| f[1] }) }
-      self.on('appendTuple') { |*args| @rows << args.first }
-      self.on('setNTuplesAffected') { |*args| @num_rows.complete(args.first) }
-      self.on('setCompleted') { |*args| @rows << nil }
-      self.on('setErrorMessage') { |*args| @rows << RunivedoSqlError.new("error executing query: #{args.first}") }
-      self.on('setNColumns') { |*args| }
-      self.on('tuplesAffected') { |*args| }
+      self.on('appendTuple') { |t| @rows << t }
+      self.on('setNTuplesAffected') { |n| @num_rows.complete(n) }
+      self.on('setCompleted') { @rows << nil }
+      self.on('setErrorMessage') { |msg| @rows << RunivedoSqlError.new("error executing query: #{msg}") }
+      self.on('setNColumns') { |*| }
+      self.on('tuplesAffected') { |*| }
     end
 
     def num_affected_rows

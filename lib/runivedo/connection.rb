@@ -32,6 +32,10 @@ module Runivedo
       @remote_objects[id] = obj
     end
 
+    def unregister_ro_instance(id)
+      @remote_objects.delete(id)
+    end
+
     def onmessage(message)
       ro_id = message.read
       raise "ro_id invalid" unless @remote_objects.has_key?(ro_id)
@@ -40,7 +44,6 @@ module Runivedo
 
     def onclose(reason)
       @remote_objects.each do |id, ro|
-        puts "closing ro #{id}"
         ro.send(:onclose, reason)
       end
     end
