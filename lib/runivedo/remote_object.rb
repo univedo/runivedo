@@ -63,7 +63,10 @@ module Runivedo
         @cond.wait(@mutex) while @calls[call_id][:success].nil?
         success, message = @calls[call_id].values_at(:success, :value)
         @calls.delete(call_id)
-        raise message unless success
+        unless success
+          message.set_backtrace caller
+          raise message
+        end
         status = message.read
         case status
         when 0
@@ -81,6 +84,7 @@ module Runivedo
     end
 
     def close
+      return
       @connection.stream.send_message do |m|
         m << @id
         m << OPERATION_DELETE

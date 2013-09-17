@@ -16,6 +16,7 @@ module Runivedo
       self.on('setErrorMessage') { |msg| @rows << RunivedoSqlError.new("error executing query: #{msg}") }
       self.on('setNColumns') { |*| }
       self.on('tuplesAffected') { |*| }
+      self.on('setRecordId') { |*| }
     end
 
     def num_affected_rows
