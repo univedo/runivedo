@@ -74,7 +74,7 @@ module Runivedo
           count.times { chars << get_bytes(2, "S") }
           chars.pack("U*")
         when 41
-          [get_bytes(4, "L"), get_bytes(8, "Q")]
+          "[#{get_bytes(4, "L")}, #{get_bytes(8, "Q")}]"
         when 42
           UUIDTools::UUID.parse_raw(get_bytes(16, "a*"))
         when 45
