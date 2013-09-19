@@ -8,6 +8,7 @@ module Runivedo
       @rows = Queue.new
       @num_rows = Future.new
       @columns = Future.new
+      @last_inserted_id = Future.new
 
       self.on('setResultToField') { |*args| @columns.complete(args.first.map { |f| f[1] }) }
       self.on('appendTuple') { |t| @rows << t }
@@ -16,11 +17,15 @@ module Runivedo
       self.on('setErrorMessage') { |msg| @rows << RunivedoSqlError.new("error executing query: #{msg}") }
       self.on('setNColumns') { |*| }
       self.on('tuplesAffected') { |*| }
-      self.on('setRecordId') { |*| }
+      self.on('setRecordId') { |id| @last_inserted_id.complete(id) }
     end
 
     def num_affected_rows
       @num_rows.get
+    end
+
+    def last_inserted_id
+      @last_inserted_id.get
     end
 
     def columns
