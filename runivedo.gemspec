@@ -25,7 +25,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "uuidtools"
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'rspec_junit_formatter'
-  spec.add_development_dependency 'fuubar'
+  spec.add_development_dependency 'emoji-rspec'
   spec.add_development_dependency "bundler"
   spec.add_development_dependency "rake"
 end

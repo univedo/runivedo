@@ -1,4 +1,4 @@
---color
---format Fuubar
+--require emoji-rspec
+--format hearts --color
 --format RspecJunitFormatter
 --out junit.xml
