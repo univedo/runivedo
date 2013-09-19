@@ -163,4 +163,13 @@ describe Runivedo::Stream do
       message_recv.read.should == uuid
     end
   end
+
+  describe Runivedo::VariantStream do
+    it "receives" do
+      s = Runivedo::VariantStream.new(StringIO.new("\x0D\x2A\x00\x00\x00\x00\x00\x00\x00\x1e\x06\x00\x00\x00foobar"))
+      s.read.should == 42
+      s.read.should == "foobar"
+      s.has_data?.should be_false
+    end
+  end
 end
