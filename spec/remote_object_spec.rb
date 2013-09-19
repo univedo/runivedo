@@ -6,12 +6,12 @@ describe Runivedo::RemoteObject do
   let(:ro) { Runivedo::RemoteObject.new(connection: connection, id: 2) }
 
   it 'does rom calls' do
-    stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 0, 0, 42))}
+    stream.callback = lambda {Thread.new{ro.send(:receive, MockMessage.new(2, 0, 0, 42))}}
     ro.call_rom('foo').should == 42
     stream.sent_data.should == [2, 1, 0, 'foo']
     # Second call
     stream.sent_data.clear
-    stream.callback = lambda {ro.send(:receive, MockMessage.new(2, 1, 0, 42))}
+    stream.callback = lambda {Thread.new{ro.send(:receive, MockMessage.new(2, 1, 0, 42))}}
     ro.call_rom('bar', 23).should == 42
     stream.sent_data.should == [2, 1, 1, 'bar', 23]
   end
