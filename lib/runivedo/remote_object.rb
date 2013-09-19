@@ -84,7 +84,6 @@ module Runivedo
     end
 
     def close
-      return
       @connection.stream.send_message do |m|
         m << @id
         m << OPERATION_DELETE

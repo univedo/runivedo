@@ -30,14 +30,17 @@ module Runivedo
 
     def register_ro_instance(id, obj)
       @remote_objects[id] = obj
-      # puts "ro: #{@remote_objects.count}"
+      puts "opened: #{@remote_objects.count}"
+      # ro_classes = Hash.new(0)
+      # @remote_objects.map{|r| r.class}.each {|c| ro_classes[c] += 1}
+      # puts ro_classes
     end
 
     def close_ro(id, reason)
       ro = @remote_objects[id]
       @remote_objects.delete(id)
       ro.send(:onclose, reason)
-      # puts "ro: #{@remote_objects.count}"
+      puts "closed: #{@remote_objects.count}"
     end
 
     def onmessage(message)
