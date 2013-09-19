@@ -48,7 +48,7 @@ module Runivedo
         count.times { chars << get_bytes(2, "S") }
         chars.pack("U*")
       when 41
-        "[#{get_bytes(4, "L")}, #{get_bytes(8, "Q")}]"
+        Id.new(get_bytes(4, "L"), get_bytes(8, "Q"))
       when 42
         UUIDTools::UUID.parse_raw(get_bytes(16, "a*"))
       when 45
@@ -82,6 +82,8 @@ module Runivedo
         [21, obj].pack("Cd")
       when String, Symbol
         [30, obj.to_s.bytesize, obj.to_s].pack("CLa*")
+      when Runivedo::Id
+        [41, obj.owner_id, obj.id].pack("CLQ")
       when Array
         [60, obj.count].pack("CL") + obj.map{|e| send_impl(e)}.join
       when Hash

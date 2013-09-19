@@ -35,6 +35,11 @@ describe Runivedo::Stream do
       message.buffer.should == "\x1e\x06\x00\x00\x00foobar"
     end
 
+    it "sends ids" do
+      message << Runivedo::Id.new(1, 2)
+      message.buffer.should == "\x29\x01\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00"
+    end
+
     it "sends arrays" do
       message << %w(foo bar)
       message.buffer.should == "\x3c\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x1e\x03\x00\x00\x00bar"
@@ -106,9 +111,9 @@ describe Runivedo::Stream do
       message.read.should == {"foo" => 1, "bar" => 2}
     end
 
-    it 'receives records' do
+    it 'receives ids' do
       message = Runivedo::Stream::Message.new("\x29\x01\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00")
-      message.read.should == [1, 2]
+      message.read.should == Runivedo::Id.new(1, 2)
     end
 
     it 'receives datetimes' do
