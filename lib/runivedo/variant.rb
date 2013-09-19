@@ -1,3 +1,5 @@
+require "bigdecimal"
+
 module Runivedo
   module Variant
     private
@@ -9,6 +11,14 @@ module Runivedo
         nil
       when 1
         get_bytes(1, "C") == 1 ? true : false
+      when 5
+        BigDecimal.new(get_bytes(1, "c")) / (10 ** get_bytes(1, "C"))
+      when 6
+        BigDecimal.new(get_bytes(2, "s")) / (10 ** get_bytes(1, "C"))
+      when 7
+        BigDecimal.new(get_bytes(4, "l")) / (10 ** get_bytes(1, "C"))
+      when 8
+        BigDecimal.new(get_bytes(8, "q")) / (10 ** get_bytes(1, "C"))
       when 10
         get_bytes(1, "c")
       when 11
@@ -46,7 +56,9 @@ module Runivedo
         name = read_impl
         RemoteObject.create_ro(thread_id: thread_id, connection: @connection, name: name)
       when 51
-        Time.at(get_bytes(8, "q") / 1e6).to_datetime
+        Time.at(get_bytes(8, "q") / 1e6)
+      when 52
+        Time.at(get_bytes(8, "q") / 1e6)
       when 60
         count = get_bytes(4, "L")
         count.times.map { read_impl }

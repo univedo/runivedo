@@ -79,6 +79,16 @@ describe Runivedo::Stream do
       message.read.should == 8.0e-323
     end
 
+    it 'receives decimals' do
+      message = Runivedo::Stream::Message.new(
+        "\x05" "\x2A" "\x01" +
+        "\x06" "\x2A\x00" "\x01" +
+        "\x07" "\x2A\x00\x00\x00" "\x01" +
+        "\x08" "\x2A\x00\x00\x00\x00\x00\x00\x00" "\x01"
+        )
+      4.times {message.read.should == BigDecimal.new("4.2")}
+    end
+
     it "receives strings" do
       message = Runivedo::Stream::Message.new("\x1e\x06\x00\x00\x00foobar")
       message.read.should == "foobar"
@@ -103,7 +113,12 @@ describe Runivedo::Stream do
 
     it 'receives datetimes' do
       message = Runivedo::Stream::Message.new("\x33\x40\x7F\xFF\x0D\x8B\xDA\x04\x00")
-      message.read.should == Time.at(1366190677).to_datetime
+      message.read.should == Time.at(1366190677)
+    end
+
+    it 'receives times' do
+      message = Runivedo::Stream::Message.new("\x34\x40\x7F\xFF\x0D\x8B\xDA\x04\x00")
+      message.read.should == Time.at(1366190677)
     end
 
     it 'receives uuids' do
