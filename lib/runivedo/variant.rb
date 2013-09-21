@@ -79,22 +79,28 @@ module Runivedo
         "\x00"
       when TrueClass, FalseClass
         [1, obj ? 1 : 0].pack("CC")
-      when Fixnum
-        [13, obj].pack("Cq")
+      when Fixnum, Bignum
+        if obj < 0
+          raise "integer value below int64 limits" if obj <= -2**63
+          [13, obj].pack("Cq")
+        else
+          raise "integer value over uint64 limits" if obj >= 2**64
+          [18, obj].pack("CQ")
+        end
       when Float
         [21, obj].pack("Cd")
       when String, Symbol
         [30, obj.to_s.bytesize, obj.to_s].pack("CLa*")
       when Runivedo::Id
         [41, obj.owner_id, obj.id].pack("CLQ")
+      when Time
+        [51, obj.usec].pack("Cq")
       when Array
         [60, obj.count].pack("CL") + obj.map{|e| send_impl(e)}.join
       when Hash
         [61, obj.count].pack("CL") + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
       when UUIDTools::UUID
         [42].pack("C") + obj.raw
-      when Time
-        [51, obj.usec].pack("Cq")
       else
         raise "sending not supported for class #{obj.class}"
       end
