@@ -36,10 +36,8 @@ module Runivedo
       when 18
         get_bytes(8, "Q")
       when 20
-        p 'floar'
         get_bytes(4, "f")
       when 21
-        p 'double'
         get_bytes(8, "d")
       when 30
         count = get_bytes(4, "L")
