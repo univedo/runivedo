@@ -17,7 +17,7 @@ describe Runivedo::Stream do
 
     it "sends integers" do
       message << 42
-      message.buffer.should == "\x0D\x2A" + "\x00" * 7
+      message.buffer.should == "\x12\x2A" + "\x00" * 7
     end
 
     it "sends floats" do
