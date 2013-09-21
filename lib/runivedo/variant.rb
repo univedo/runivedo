@@ -59,9 +59,9 @@ module Runivedo
         name = read_impl
         RemoteObject.create_ro(thread_id: thread_id, connection: @connection, name: name)
       when 51
-        Time.at(get_bytes(8, "q") / 1e6)
+        Time.at(get_bytes(8, "q").to_r / 1000000)
       when 52
-        Time.at(get_bytes(8, "q") / 1e6)
+        Time.at(get_bytes(8, "q").to_r / 1000000)
       when 60
         count = get_bytes(4, "L")
         count.times.map { read_impl }
