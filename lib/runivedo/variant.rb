@@ -47,6 +47,9 @@ module Runivedo
         chars = []
         count.times { chars << get_bytes(2, "S") }
         chars.pack("U*")
+      when 40
+        count = get_bytes(4, "L")
+        get_bytes(count, "a*")
       when 41
         Id.new(get_bytes(4, "L"), get_bytes(8, "Q"))
       when 42
