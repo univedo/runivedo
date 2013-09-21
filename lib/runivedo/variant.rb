@@ -93,6 +93,8 @@ module Runivedo
         [61, obj.count].pack("CL") + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
       when UUIDTools::UUID
         [42].pack("C") + obj.raw
+      when Time
+        [51, obj.usec].pack("Cq")
       else
         raise "sending not supported for class #{obj.class}"
       end
