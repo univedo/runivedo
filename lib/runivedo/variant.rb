@@ -94,7 +94,7 @@ module Runivedo
       when Runivedo::Id
         [41, obj.owner_id, obj.id].pack("CLQ")
       when Time
-        [51, obj.usec].pack("Cq")
+        [51, obj.to_r*1000000].pack("Cq")
       when Array
         [60, obj.count].pack("CL") + obj.map{|e| send_impl(e)}.join
       when Hash
