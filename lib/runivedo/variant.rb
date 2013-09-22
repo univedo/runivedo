@@ -10,7 +10,9 @@ module Runivedo
       when 0
         nil
       when 1
-        get_bytes(1, "C") == 1 ? true : false
+        true
+      when 2
+        false
       when 5
         BigDecimal.new(get_bytes(1, "c")) / (10 ** get_bytes(1, "C"))
       when 6
@@ -77,8 +79,10 @@ module Runivedo
       case obj
       when nil
         "\x00"
-      when TrueClass, FalseClass
-        [1, obj ? 1 : 0].pack("CC")
+      when TrueClass
+        "\x01"
+      when FalseClass
+        "\x02"
       when Fixnum, Bignum
         if obj < 0
           raise "integer value below int64 limits" if obj <= -2**63

@@ -12,7 +12,7 @@ describe Runivedo::Stream do
     it "sends bools" do
       message << true
       message << false
-      message.buffer.should == "\x01\x01\x01\x00"
+      message.buffer.should == "\x01\x02"
     end
 
     it "sends integers" do
@@ -47,7 +47,7 @@ describe Runivedo::Stream do
 
     it "sends maps" do
       message << {"foo" => true, "bar" => false}
-      message.buffer.should == "\x3d\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x01\x01\x1e\x03\x00\x00\x00bar\x01\x00"
+      message.buffer.should == "\x3d\x02\x00\x00\x00\x1e\x03\x00\x00\x00foo\x01\x1e\x03\x00\x00\x00bar\x02"
     end
 
     it 'sends uuids' do
@@ -64,10 +64,10 @@ describe Runivedo::Stream do
     end
 
     it "receives bools" do
-      message = Runivedo::Stream::Message.new("\x01\x00")
-      message.read.should == false
-      message = Runivedo::Stream::Message.new("\x01\x01")
+      message = Runivedo::Stream::Message.new("\x01")
       message.read.should == true
+      message = Runivedo::Stream::Message.new("\x02")
+      message.read.should == false
     end
 
     it "receives integers" do
