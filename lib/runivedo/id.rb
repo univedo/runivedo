@@ -10,7 +10,7 @@ module Runivedo
     end
 
     def to_s
-      "[#{@owner_id}, #{@id}"
+      "[#{@owner_id}, #{@id}]"
     end
 
     def <=>(other)
