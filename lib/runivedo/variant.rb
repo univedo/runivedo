@@ -53,7 +53,7 @@ module Runivedo
         count = get_bytes(4, "L")
         get_bytes(count, "a*")
       when 41
-        Id.new(get_bytes(4, "L"), get_bytes(8, "Q"))
+        get_bytes(8, "Q")
       when 42
         UUIDTools::UUID.parse_raw(get_bytes(16, "a*"))
       when 45
@@ -95,8 +95,6 @@ module Runivedo
         [21, obj].pack("Cd")
       when String, Symbol
         [30, obj.to_s.bytesize, obj.to_s].pack("CLa*")
-      when Runivedo::Id
-        [41, obj.owner_id, obj.id].pack("CLQ")
       when Time
         [51, obj.to_r*1000000].pack("Cq")
       when Array
