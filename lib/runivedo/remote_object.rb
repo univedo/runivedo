@@ -27,9 +27,9 @@ module Runivedo
     # Instance stuff
 
     module MethodMissing
-      def method_missing(name, *args)
+      def method_missing(name, *args, &block)
         camelizedName = name.to_s.gsub(/_([a-z])/) { $1.capitalize}
-        call_rom(camelizedName, *args)
+        call_rom(camelizedName, *args, &block)
       end
     end
 
@@ -70,7 +70,17 @@ module Runivedo
         status = message.read
         case status
         when 0
-          message.read
+          # If result is a remote object and we have a block pass it as parameter and close again
+          result = message.read
+          if result.is_a?(RemoteObject) && block_given?
+            begin
+              yield result
+            ensure
+              result.close
+              return nil
+            end
+          end
+          result
         when 2
           raise RunivedoSqlError.new(message.read)
         else
