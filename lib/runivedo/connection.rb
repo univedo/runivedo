@@ -14,8 +14,8 @@ module Runivedo
       @session_remote = urologin.call_rom('getSession', args)
     end
 
-    def get_perspective(name)
-      @session_remote.call_rom('getPerspective', name)
+    def get_perspective(name, &block)
+      @session_remote.call_rom('getPerspective', name, &block)
     end
 
     def set_perspective(name)
