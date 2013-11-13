@@ -14,7 +14,7 @@ describe Runivedo::Stream do
       message << true
       message << false
       # message.buffer.should == "\x01\x02"
-      message.buffer.should == "\xf5\xf4"
+      message.buffer.should == "\xF5\xF4"
     end
 
     it "sends integers" do

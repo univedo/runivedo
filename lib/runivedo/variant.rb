@@ -92,7 +92,7 @@ module Runivedo
           raise "Tag not supported"
         end
       when VariantMajor::FLOAT
-        case (typeInt & 0x1F)
+        case typeInt & 0x1F
         when VariantSimple::FALSE
           false
         when VariantSimple::TRUE
@@ -123,13 +123,13 @@ module Runivedo
 
     def send_len(major, len)
       typeInt = (major << 5);
-      if (len <= 23)
-        typeInt | len;
-      elsif (len < 0x100)
+      if len <= 23
+        [typeInt | len].pack("C")
+      elsif len < 0x100
         [typeInt | 24, len].pack("CC")
-      elsif (len < 0x10000)
+      elsif len < 0x10000
         [typeInt | 25, len].pack("CS>")
-      elsif (len < 0x100000000)
+      elsif len < 0x100000000
         [typeInt | 26, len].pack("CL>")
       else
         [typeInt | 27, len].pack("CQ>")
@@ -145,10 +145,10 @@ module Runivedo
       when FalseClass
         send_simple(VariantSimple::FALSE)
       when Fixnum, Bignum
-        if (val < 0)
-          send_len(VariantMajor::NEGINT, -val-1)
+        if obj < 0
+          send_len(VariantMajor::NEGINT, -obj-1)
         else
-          send_len(VariantMajor::UINT, val)
+          send_len(VariantMajor::UINT, obj)
         end
       when Float
         send_simple(VariantSimple::FLOAT64) + [obj].pack("d")
