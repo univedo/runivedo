@@ -7,7 +7,7 @@ describe Runivedo::Stream do
     it "sends null" do
       message << nil
       # message.buffer.should == "\x00"
-      message.buffer.should == "\xf6"
+      message.buffer.should == "\xF6"
     end
 
     it "sends bools" do
@@ -58,7 +58,7 @@ describe Runivedo::Stream do
       uuid = UUIDTools::UUID.random_create
       message << uuid
       # message.buffer.should == "\x2a" + uuid.raw
-      message.buffer.should == "\xc8\x50" + uuid.raw
+      message.buffer.should == "\xc7\x50" + uuid.raw
     end
   end
 
@@ -129,28 +129,27 @@ describe Runivedo::Stream do
       message.read.should == {"bar" => 2, "foo" => 1}
     end
 
-    it 'receives ids' do
-      # message = Runivedo::Stream::Message.new("\x29\x02\x00\x00\x00\x00\x00\x00\x00")
-      message = Runivedo::Stream::Message.new("\xc9\x02")
-      message.read.should == 2
-    end
+    # it 'receives ids' do
+    #   message = Runivedo::Stream::Message.new("\x29\x02\x00\x00\x00\x00\x00\x00\x00")
+    #   message.read.should == 2
+    # end
 
     it 'receives datetimes' do
       # message = Runivedo::Stream::Message.new("\x33\x40\x7F\xFF\x0D\x8B\xDA\x04\x00")
-      message = Runivedo::Stream::Message.new("\xca\x1a\x59\x6e\x6a\x55")
+      message = Runivedo::Stream::Message.new("\xc9\x1a\x59\x6e\x6a\x55")
       message.read.should == Time.at(1366190677)
     end
 
     it 'receives times' do
       # message = Runivedo::Stream::Message.new("\x34\x40\x7F\xFF\x0D\x8B\xDA\x04\x00")
-      message = Runivedo::Stream::Message.new("\xc9\x1a\x59\x6e\x6a\x55")
+      message = Runivedo::Stream::Message.new("\xc8\x1a\x59\x6e\x6a\x55")
       message.read.should == Time.at(1366190677)
     end
 
     it 'receives uuids' do
       uuid = UUIDTools::UUID.random_create
       # message = Runivedo::Stream::Message.new("\x2a" + uuid.raw)
-      message = Runivedo::Stream::Message.new("\xc8\x50" + uuid.raw)
+      message = Runivedo::Stream::Message.new("\xc7\x50" + uuid.raw)
       message.read.should == uuid
     end
   end

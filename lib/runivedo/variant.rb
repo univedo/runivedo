@@ -1,108 +1,169 @@
 require "bigdecimal"
 
 module Runivedo
+  module VariantMajor
+    UINT = 0
+    NEGINT = 1
+    BYTESTRING = 2
+    TEXTSTRING = 3
+    ARRAY = 4
+    MAP = 5
+    TAG = 6
+    FLOAT = 7
+  end
+
+  module VariantTag
+    DECIMAL = 4
+    REMOTEOBJECT = 6
+    UUID = 7
+    TIME = 8
+    DATETIME = 9
+    SQL = 10
+  end
+
+  module VariantSimple
+    FALSE = 20
+    TRUE = 21
+    NULL = 22
+    FLOAT16 = 25
+    FLOAT32 = 26
+    FLOAT64 = 27
+  end
+
+
+
   module Variant
     private
+    def get_len(typeInt)
+      smallLen = typeInt & 0x1F
+      case smallLen
+      when 24
+        get_bytes(1, "C")
+      when 25
+        get_bytes(2, "S>")
+      when 26
+        get_bytes(4, "L>")
+      when 27
+        get_bytes(8, "Q>")
+      else
+        smallLen
+      end
+    end
 
     def read_impl
-      type = get_bytes(1, "C")
-      case type
-      when 0
-        nil
-      when 1
-        true
-      when 2
-        false
-      when 5
-        BigDecimal.new(get_bytes(1, "c")) / (10 ** get_bytes(1, "C"))
-      when 6
-        BigDecimal.new(get_bytes(2, "s")) / (10 ** get_bytes(1, "C"))
-      when 7
-        BigDecimal.new(get_bytes(4, "l")) / (10 ** get_bytes(1, "C"))
-      when 8
-        BigDecimal.new(get_bytes(8, "q")) / (10 ** get_bytes(1, "C"))
-      when 10
-        get_bytes(1, "c")
-      when 11
-        get_bytes(2, "s")
-      when 12
-        get_bytes(4, "l")
-      when 13
-        get_bytes(8, "q")
-      when 15
-        get_bytes(1, "C")
-      when 16
-        get_bytes(2, "S")
-      when 17
-        get_bytes(4, "L")
-      when 18
-        get_bytes(8, "Q")
-      when 20
-        get_bytes(4, "f")
-      when 21
-        get_bytes(8, "d")
-      when 30
-        count = get_bytes(4, "L")
+      typeInt = get_bytes(1, "C")
+      major = (typeInt >> 5);
+
+      case major
+      when VariantMajor::UINT
+        get_len(typeInt)
+      when VariantMajor::NEGINT
+        -get_len(typeInt)-1
+      when VariantMajor::BYTESTRING
+        count = get_len(typeInt)
         get_bytes(count, "a*")
-      when 31
-        count = get_bytes(4, "L")
-        chars = []
-        count.times { chars << get_bytes(2, "S") }
-        chars.pack("U*")
-      when 40
-        count = get_bytes(4, "L")
+      when VariantMajor::TEXTSTRING
+        count = get_len(typeInt)
         get_bytes(count, "a*")
-      when 41
-        get_bytes(8, "Q")
-      when 42
-        UUIDTools::UUID.parse_raw(get_bytes(16, "a*"))
-      when 45
-        thread_id = get_bytes(4, "L")
-        name = read_impl
-        RemoteObject.create_ro(thread_id: thread_id, connection: @connection, name: name)
-      when 51
-        Time.at(get_bytes(8, "q").to_r / 1000000)
-      when 52
-        Time.at(get_bytes(8, "q").to_r / 1000000)
-      when 60
-        count = get_bytes(4, "L")
+      when VariantMajor::ARRAY
+        count = get_len(typeInt)
         count.times.map { read_impl }
-      when 61
-        count = get_bytes(4, "L")
+      when VariantMajor::MAP
+        count = get_len(typeInt)
         Hash[count.times.map { [read_impl, read_impl] }]
+      when TAG
+        tag = get_len(typeInt)
+        case tag
+        when VariantTag::DECIMAL
+          arr = read_impl
+          raise "inconsostent type" if arr.length != 2
+          BigDecimal.new(arr[0]) / (10 ** arr[1])
+        when VariantTag::REMOTEOBJECT
+          arr = read_impl
+          raise "inconsostent type" if arr.length != 2
+          thread_id = arr[0]
+          name = arr[1]
+          RemoteObject.create_ro(thread_id: thread_id, connection: @connection, name: name)
+        when VariantTag::UUID
+          UUIDTools::UUID.parse_raw(read_impl)
+        when VariantTag::TIME
+          Time.at(read_impl.to_r / 1000000)
+        when VariantTag::DATETIME
+          Time.at(read_impl.to_r / 1000000)
+        else
+          raise "Tag not supported"
+        end
+      when VariantMajor::FLOAT
+        case (typeInt & 0x1F)
+        when VariantSimple::FALSE
+          false
+        when VariantSimple::TRUE
+          true
+        when VariantSimple::NULL
+          nil
+        when VariantSimple::FLOAT16
+          raise "half precision float not supported"
+        when VariantSimple::FLOAT32
+          get_bytes(4, "f")
+        when VariantSimple::FLOAT64
+          get_bytes(8, "d")
+        else
+          raise "invalid simple"
+        end
       else
-        raise "received unsupported type #{type}"
+        raise "unknown major"
+      end
+    end
+
+    def send_simple(val)
+      [(VariantMajor::FLOAT << 5) | val].pack("C")
+    end
+
+    def send_tag(tag)
+      [(VariantMajor::TAG << 5) | tag].pack("C")
+    end
+
+    def send_len(major, len)
+      typeInt = (major << 5);
+      if (len <= 23)
+        typeInt | len;
+      elsif (len < 0x100)
+        [typeInt | 24, len].pack("CC")
+      elsif (len < 0x10000)
+        [typeInt | 25, len].pack("CS>")
+      elsif (len < 0x100000000)
+        [typeInt | 26, len].pack("CL>")
+      else
+        [typeInt | 27, len].pack("CQ>")
       end
     end
 
     def send_impl(obj)
       case obj
       when nil
-        "\x00"
+        send_simple(VariantSimple::NULL)
       when TrueClass
-        "\x01"
+        send_simple(VariantSimple::TRUE)
       when FalseClass
-        "\x02"
+        send_simple(VariantSimple::FALSE)
       when Fixnum, Bignum
-        if obj < 0
-          raise "integer value below int64 limits" if obj <= -2**63
-          [13, obj].pack("Cq")
+        if (val < 0)
+          send_len(VariantMajor::NEGINT, -val-1)
         else
-          raise "integer value over uint64 limits" if obj >= 2**64
-          [18, obj].pack("CQ")
+          send_len(VariantMajor::UINT, val)
         end
       when Float
-        [21, obj].pack("Cd")
+        send_simple(VariantSimple::FLOAT64) + [obj].pack("d")
       when String, Symbol
-        [30, obj.to_s.bytesize, obj.to_s].pack("CLa*")
+        send_len(VariantMajor::TEXTSTRING, obj.to_s.bytesize) + obj.to_s
       when Time
-        [51, obj.to_r*1000000].pack("Cq")
+        send_tag(VariantTag::TIME) + send_num(obj.to_r*1000000)
       when Array
-        [60, obj.count].pack("CL") + obj.map{|e| send_impl(e)}.join
+        send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash
-        [61, obj.count].pack("CL") + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
+        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
       when UUIDTools::UUID
-        [42].pack("C") + obj.raw
+        send_tag(VariantTag::UUID) + send_len(VariantMajor::BYTESTRING, 16) + obj.raw
       else
         raise "sending not supported for class #{obj.class}"
       end
