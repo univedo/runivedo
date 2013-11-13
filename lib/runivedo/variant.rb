@@ -71,7 +71,7 @@ module Runivedo
       when VariantMajor::MAP
         count = get_len(typeInt)
         Hash[count.times.map { [read_impl, read_impl] }]
-      when TAG
+      when VariantMajor::TAG
         tag = get_len(typeInt)
         case tag
         when VariantTag::DECIMAL
