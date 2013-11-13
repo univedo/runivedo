@@ -76,11 +76,11 @@ module Runivedo
         case tag
         when VariantTag::DECIMAL
           arr = read_impl
-          raise "inconsostent type" if arr.length != 2
+          raise "inconsistent type" if arr.length != 2
           BigDecimal.new(arr[0]) / (10 ** -arr[1])
         when VariantTag::REMOTEOBJECT
           arr = read_impl
-          raise "inconsostent type" if arr.length != 2
+          raise "inconsistent type" if arr.length != 2
           RemoteObject.create_ro(thread_id: arr[0], connection: @connection, name: arr[1])
         when VariantTag::UUID
           UUIDTools::UUID.parse_raw(read_impl)
@@ -159,7 +159,7 @@ module Runivedo
       when Array
         send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash
-        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
+        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k.to_s) + send_impl(v)}.join
       when UUIDTools::UUID
         send_tag(VariantTag::UUID) + send_len(VariantMajor::BYTESTRING, 16) + obj.raw
       else
