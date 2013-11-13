@@ -52,7 +52,7 @@ module Runivedo
 
     def read_impl
       typeInt = get_bytes(1, "C")
-      major = (typeInt >> 5);
+      major = (typeInt >> 5)
 
       case major
       when VariantMajor::UINT
@@ -77,13 +77,11 @@ module Runivedo
         when VariantTag::DECIMAL
           arr = read_impl
           raise "inconsostent type" if arr.length != 2
-          BigDecimal.new(arr[0]) / (10 ** arr[1])
+          BigDecimal.new(arr[0]) / (10 ** -arr[1])
         when VariantTag::REMOTEOBJECT
           arr = read_impl
           raise "inconsostent type" if arr.length != 2
-          thread_id = arr[0]
-          name = arr[1]
-          RemoteObject.create_ro(thread_id: thread_id, connection: @connection, name: name)
+          RemoteObject.create_ro(thread_id: arr[0], connection: @connection, name: arr[1])
         when VariantTag::UUID
           UUIDTools::UUID.parse_raw(read_impl)
         when VariantTag::TIME
