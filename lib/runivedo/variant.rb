@@ -84,9 +84,7 @@ module Runivedo
           RemoteObject.create_ro(thread_id: arr[0], connection: @connection, name: arr[1])
         when VariantTag::UUID
           UUIDTools::UUID.parse_raw(read_impl)
-        when VariantTag::TIME
-          Time.at(read_impl.to_r / 1000000)
-        when VariantTag::DATETIME
+        when VariantTag::TIME, VariantTag::DATETIME
           Time.at(read_impl.to_r / 1000000)
         else
           raise "Tag not supported"
@@ -155,7 +153,7 @@ module Runivedo
       when String, Symbol
         send_len(VariantMajor::TEXTSTRING, obj.to_s.bytesize) + obj.to_s
       when Time
-        send_tag(VariantTag::TIME) + send_num(obj.to_r*1000000)
+        send_tag(VariantTag::TIME) + send_impl((obj.to_r*1000000).to_i)
       when Array
         send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash

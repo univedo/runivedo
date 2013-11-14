@@ -50,6 +50,12 @@ describe Runivedo::Stream do
       message << uuid
       message.buffer.should == "\xc7\x50".b + uuid.raw
     end
+
+    it 'receives datetimes' do
+      time = Time.at(1366190677)
+      message << time
+      message.buffer.should == "\xc8\x1b\x00\x04\xDA\x8B\x0D\xFF\x7F\x40".b
+    end
   end
 
   describe "receiving" do
