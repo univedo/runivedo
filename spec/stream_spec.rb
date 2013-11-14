@@ -30,6 +30,11 @@ describe Runivedo::Stream do
       message.buffer.should == "\x66foobar"
     end
 
+    it "sends blobs" do
+      message << "foobar".b
+      message.buffer.should == "\x46foobar"
+    end
+
     it "sends symbols as strings" do
       message << :foobar
       message.buffer.should == "\x66foobar".b
@@ -90,7 +95,16 @@ describe Runivedo::Stream do
 
     it "receives strings" do
       message = Runivedo::Stream::Message.new("\x66foobar".b)
-      message.read.should == "foobar"
+      s = message.read
+      s.should == "foobar"
+      s.encoding.should == Encoding::UTF_8
+    end
+
+    it "receives blobs" do
+      message = Runivedo::Stream::Message.new("\x46foobar".b)
+      s = message.read
+      s.should == "foobar"
+      s.encoding.should == Encoding::ASCII_8BIT
     end
 
     it "receives arrays" do

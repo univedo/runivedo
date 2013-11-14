@@ -64,7 +64,7 @@ module Runivedo
         get_bytes(count, "a*")
       when VariantMajor::TEXTSTRING
         count = get_len(typeInt)
-        get_bytes(count, "a*")
+        get_bytes(count, "a*").force_encoding(Encoding::UTF_8)
       when VariantMajor::ARRAY
         count = get_len(typeInt)
         count.times.map { read_impl }
@@ -150,8 +150,11 @@ module Runivedo
         end
       when Float
         send_simple(VariantSimple::FLOAT64) + [obj].pack("d")
-      when String, Symbol
-        send_len(VariantMajor::TEXTSTRING, obj.to_s.bytesize) + obj.to_s
+      when String
+        s = obj.to_s
+        send_len(s.encoding == Encoding::UTF_8 ? VariantMajor::TEXTSTRING : VariantMajor::BYTESTRING, s.bytesize) + s
+      when Symbol
+        send_impl(obj.to_s.force_encoding(Encoding::UTF_8))
       when Time
         send_tag(VariantTag::TIME) + send_impl((obj.to_r*1000000).to_i)
       when Array
