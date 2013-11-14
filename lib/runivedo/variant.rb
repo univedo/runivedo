@@ -159,7 +159,7 @@ module Runivedo
       when Hash
         send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k.to_s) + send_impl(v)}.join
       when UUIDTools::UUID
-        send_tag(VariantTag::UUID) + send_len(VariantMajor::BYTESTRING, 16) + obj.raw
+        send_tag(VariantTag::UUID) + send_impl(obj.raw.b)
       else
         raise "sending not supported for class #{obj.class}"
       end

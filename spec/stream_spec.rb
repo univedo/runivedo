@@ -48,7 +48,7 @@ describe Runivedo::Stream do
     it 'sends uuids' do
       uuid = UUIDTools::UUID.random_create
       message << uuid
-      message.buffer.should == "\xc7\x50".b + uuid.raw
+      message.buffer.should == "\xc7\x50".b + uuid.raw.b
     end
 
     it 'receives datetimes' do
