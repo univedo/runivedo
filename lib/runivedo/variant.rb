@@ -152,9 +152,9 @@ module Runivedo
         end
       when Float
         send_simple(VariantSimple::FLOAT64) + [obj].pack("d")
-      when String
-        s = obj.to_s
-        send_len(s.encoding == Encoding::UTF_8 ? VariantMajor::TEXTSTRING : VariantMajor::BYTESTRING, s.bytesize) + s
+      when String, Symbol
+        s = obj.to_s.dup.force_encoding(Encoding::UTF_8)
+        send_len(s.valid_encoding? ? VariantMajor::TEXTSTRING : VariantMajor::BYTESTRING, s.bytesize) + s.b
       when Symbol
         send_impl(obj.to_s.force_encoding(Encoding::UTF_8))
       when Time
@@ -162,7 +162,7 @@ module Runivedo
       when Array
         send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash
-        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
+        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k.to_s) + send_impl(v)}.join
       when UUIDTools::UUID
         send_tag(VariantTag::UUID) + send_impl(obj.raw.b)
       else

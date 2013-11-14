@@ -31,8 +31,8 @@ describe Runivedo::Stream do
     end
 
     it "sends blobs" do
-      message << "foobar".b
-      message.buffer.should == "\x46foobar"
+      message << "f\xc3\x28bar".b
+      message.buffer.should == "\x46f\xc3\x28bar".b
     end
 
     it "sends symbols as strings" do
@@ -46,7 +46,7 @@ describe Runivedo::Stream do
     end
 
     it "sends maps" do
-      message << {"bar" => false, "foo" => true}
+      message << {"bar" => false, :foo => true}
       message.buffer.should == "\xa2\x63bar\xf4\x63foo\xf5".b
     end
 
