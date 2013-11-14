@@ -64,7 +64,9 @@ module Runivedo
         get_bytes(count, "a*")
       when VariantMajor::TEXTSTRING
         count = get_len(typeInt)
-        get_bytes(count, "a*").force_encoding(Encoding::UTF_8)
+        s = get_bytes(count, "a*").force_encoding(Encoding::UTF_8)
+        raise "received non-utf8 string when expecting utf8" unless s.valid_encoding?
+        s
       when VariantMajor::ARRAY
         count = get_len(typeInt)
         count.times.map { read_impl }
