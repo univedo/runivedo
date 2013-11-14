@@ -155,8 +155,6 @@ module Runivedo
       when String, Symbol
         s = obj.to_s.dup.force_encoding(Encoding::UTF_8)
         send_len(s.valid_encoding? ? VariantMajor::TEXTSTRING : VariantMajor::BYTESTRING, s.bytesize) + s.b
-      when Symbol
-        send_impl(obj.to_s.force_encoding(Encoding::UTF_8))
       when Time
         send_tag(VariantTag::TIME) + send_impl((obj.to_r*1000000).to_i)
       when Array
