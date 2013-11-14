@@ -162,7 +162,7 @@ module Runivedo
       when Array
         send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash
-        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k.to_s) + send_impl(v)}.join
+        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k) + send_impl(v)}.join
       when UUIDTools::UUID
         send_tag(VariantTag::UUID) + send_impl(obj.raw.b)
       else
