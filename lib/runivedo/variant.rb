@@ -77,7 +77,7 @@ module Runivedo
         when VariantTag::DECIMAL
           arr = read_impl
           raise "inconsistent type" if arr.length != 2
-          BigDecimal.new(arr[0]) / (10 ** -arr[1])
+          BigDecimal.new(arr[0]) * (10 ** arr[1])
         when VariantTag::REMOTEOBJECT
           arr = read_impl
           raise "inconsistent type" if arr.length != 2
