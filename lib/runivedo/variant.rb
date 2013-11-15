@@ -156,13 +156,13 @@ module Runivedo
         s = obj.to_s.dup.force_encoding(Encoding::UTF_8)
         send_len(s.valid_encoding? ? VariantMajor::TEXTSTRING : VariantMajor::BYTESTRING, s.bytesize) + s.b
       when Time
-        send_tag(VariantTag::TIME) + send_impl((obj.to_r*1000000).to_i)
+        "\xc8\x1b".b + [(obj.to_r*1000000).to_i].pack("Q>")
       when Array
         send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash
         send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k.to_s) + send_impl(v)}.join
       when UUIDTools::UUID
-        send_tag(VariantTag::UUID) + send_impl(obj.raw.b)
+        "\xc7\x50".b + obj.raw.b
       else
         raise "sending not supported for class #{obj.class}"
       end
