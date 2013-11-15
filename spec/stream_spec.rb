@@ -178,6 +178,18 @@ describe Runivedo::Stream do
       message_recv.read.should == {"foo" => 1, "foo" => 2}
     end
 
+    it "works for positive decimal" do
+      dec = BigDecimal.new("4.3")
+      message << dec
+      message_recv.read.to_s('F').should == "4.3"
+    end
+
+    it "works for negative decimal" do
+      dec = BigDecimal.new("-4.3")
+      message << dec
+      message_recv.read.to_s('F').should == "-4.3"
+    end
+
     it "works for uuids" do
       uuid = UUIDTools::UUID.random_create
       message << uuid

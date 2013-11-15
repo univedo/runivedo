@@ -144,6 +144,18 @@ module Runivedo
         send_simple(VariantSimple::TRUE)
       when FalseClass
         send_simple(VariantSimple::FALSE)
+      when BigDecimal
+        sign, significant_digits, base, exponent = obj.split
+        val = significant_digits.to_i(base)
+        raise "unexpected decimal format" if val < 0
+        case sign
+        when -1
+          send_tag(VariantTag::DECIMAL) + send_impl([-val, -exponent]) 
+        when 1
+          send_tag(VariantTag::DECIMAL) + send_impl([val, -exponent]) 
+        else
+         raise "decimal not a number"
+       end
       when Fixnum, Bignum
         if obj < 0
           send_len(VariantMajor::NEGINT, -obj-1)
