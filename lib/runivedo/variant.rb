@@ -153,9 +153,9 @@ module Runivedo
         case sign
         when -1
           raise "unexpected decimal format" if val == 0
-          send_tag(VariantTag::DECIMAL) + "\x82".b + send_len(VariantMajor::NEGINT, val-1) + strExp.b
+          "\xc4\x82".b + send_len(VariantMajor::NEGINT, val-1) + strExp.b
         when 1
-          send_tag(VariantTag::DECIMAL) + "\x82".b + send_len(VariantMajor::UINT, val) + strExp.b
+          "\xc4\x82".b + send_len(VariantMajor::UINT, val) + strExp.b
         else
          raise "decimal not a number"
        end
