@@ -178,6 +178,12 @@ describe Runivedo::Stream do
       message_recv.read.should == {"foo" => 1, "foo" => 2}
     end
 
+    it "works for null decimal" do
+      dec = BigDecimal.new("0.00")
+      message << dec
+      message_recv.read.to_s('F').should == "0.0"
+    end
+
     it "works for positive decimal" do
       dec = BigDecimal.new("4.3")
       message << dec
@@ -185,7 +191,7 @@ describe Runivedo::Stream do
     end
 
     it "works for negative decimal" do
-      dec = BigDecimal.new("-4.3")
+      dec = BigDecimal.new(43) / BigDecimal.new(-10)
       message << dec
       message_recv.read.to_s('F').should == "-4.3"
     end

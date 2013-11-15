@@ -148,11 +148,19 @@ module Runivedo
         sign, significant_digits, base, exponent = obj.split
         val = significant_digits.to_i(base)
         raise "unexpected decimal format" if val < 0
+        if exponent == 0
+          strExp = send_len(VariantMajor::UINT, 0)
+        elsif exponent > 0
+          strExp = send_len(VariantMajor::NEGINT, exponent-1)
+        else
+          raise "unexpected decimal format"
+        end
         case sign
         when -1
-          send_tag(VariantTag::DECIMAL) + send_impl([-val, -exponent]) 
+          raise "unexpected decimal format" if val == 0
+          send_tag(VariantTag::DECIMAL) + "\x82".b + send_len(VariantMajor::NEGINT, val-1) + strExp.b
         when 1
-          send_tag(VariantTag::DECIMAL) + send_impl([val, -exponent]) 
+          send_tag(VariantTag::DECIMAL) + "\x82".b + send_len(VariantMajor::UINT, val) + strExp.b
         else
          raise "decimal not a number"
        end
