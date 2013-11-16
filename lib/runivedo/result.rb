@@ -6,30 +6,37 @@ module Runivedo
     def initialize(*args)
       super(*args)
       @rows = Queue.new
-      @num_rows = Future.new
-      @columns = Future.new
-      @last_inserted_id = Future.new
+      @record = Future.new
+      @affected = Future.new
 
-      self.on('setResultToField') { |*args| @columns.complete(args.first.map { |f| f[1] }) }
+      self.on('setError') do |msg|
+        err = RunivedoSqlError.new(msg)
+        @rows << err
+        @record.fail(err)
+        @affected.fail(err)
+      end
+
+      # SELECT
+      self.on('setComplete') { complete_futures }
       self.on('appendTuple') { |t| @rows << t }
-      self.on('setNTuplesAffected') { |n| @num_rows.complete(n) }
-      self.on('setCompleted') { @rows << nil }
-      self.on('setErrorMessage') { |msg| @rows << RunivedoSqlError.new("error executing query: #{msg}") }
-      self.on('setNColumns') { |*| }
-      self.on('tuplesAffected') { |*| }
-      self.on('setRecordId') { |id| @last_inserted_id.complete(id) }
+
+      # UPDATE, DELETE, LINK
+      self.on('setAffectedRecords') { |ids| @affected.complete(ids); complete_futures }
+
+      # INSERT
+      self.on('setRecord') { |id| @record.complete(id); complete_futures }
+    end
+
+    def affected_rows
+      @affected.get
     end
 
     def num_affected_rows
-      @num_rows.get
+      @affected.get ? @affected.get.count : nil
     end
 
     def last_inserted_id
-      @last_inserted_id.get
-    end
-
-    def columns
-      @columns.get
+      @record.get
     end
 
     def each(&block)
@@ -37,6 +44,13 @@ module Runivedo
         raise row if row.is_a? Exception
         block.call(row)
       end
+    end
+
+    private
+
+    def complete_futures
+      [@affected, @record].each { |f| f.complete(nil) unless f.is_complete? }
+      @rows << nil
     end
   end
 end

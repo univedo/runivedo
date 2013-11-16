@@ -35,5 +35,9 @@ module Runivedo
         @cond.broadcast
       end
     end
+
+    def is_complete?
+      !@success.nil?
+    end
   end
 end
