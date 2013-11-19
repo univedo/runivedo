@@ -18,7 +18,7 @@ module Runivedo
 
       # SELECT
       self.on('setComplete') { complete_futures }
-      self.on('appendTuple') { |t| @rows << t }
+      self.on('appendRow') { |t| @rows << t }
 
       # UPDATE, DELETE, LINK
       self.on('setAffectedRecords') { |ids| @affected.complete(ids); complete_futures }
