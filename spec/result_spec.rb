@@ -13,8 +13,8 @@ describe Runivedo::Result do
   end
 
   it 'gets rows' do
-    result.send(:notification, 'appendTuple', %w(foo bar))
-    result.send(:notification, 'appendTuple', %w(fu baz))
+    result.send(:notification, 'appendRow', %w(foo bar))
+    result.send(:notification, 'appendRow', %w(fu baz))
     result.send(:notification, 'setComplete')
     result.to_a.should == [%w(foo bar), %w(fu baz)]
 
