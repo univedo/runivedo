@@ -17,6 +17,7 @@ module Runivedo
       end
 
       # SELECT
+      self.on('setNColumns') {}
       self.on('setComplete') { complete_futures }
       self.on('appendRow') { |t| @rows << t }
 
