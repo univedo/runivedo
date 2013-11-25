@@ -28,7 +28,7 @@ module Runivedo
 
     module MethodMissing
       def method_missing(name, *args, &block)
-        camelizedName = name.to_s.gsub(/_([a-z])/) { $1.capitalize}
+        camelizedName = name.to_s.gsub(/_([a-z])/) { $1.capitalize }
         call_rom(camelizedName, *args, &block)
       end
     end
@@ -46,7 +46,7 @@ module Runivedo
       @mutex = Mutex.new
       @cond = ConditionVariable.new
     end
-    
+
     def call_rom(name, *args)
       @mutex.synchronize do
         raise "remote object closed" unless @open
@@ -77,8 +77,8 @@ module Runivedo
               yield result
             ensure
               result.close
-              return nil
             end
+            return nil
           end
           result
         when 2
