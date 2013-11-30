@@ -101,6 +101,10 @@ module Runivedo
       @connection.send(:close_ro, @id, "closed")
     end
 
+    def open?
+      @open
+    end
+
     private
 
     def notification(name, *args)

@@ -26,6 +26,10 @@ module Runivedo
       @stream.close
     end
 
+    def open?
+      @session_remote.open?
+    end
+
     private
 
     def register_ro_instance(id, obj)
