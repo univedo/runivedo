@@ -99,6 +99,7 @@ module Runivedo
         m << OPERATION_DELETE
       end
       @connection.send(:close_ro, @id, "closed")
+    rescue
     end
 
     def open?
