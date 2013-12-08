@@ -29,7 +29,11 @@ module Runivedo
     module MethodMissing
       def method_missing(name, *args, &block)
         camelizedName = name.to_s.gsub(/_([a-z])/) { $1.capitalize }
-        call_rom(camelizedName, *args, &block)
+        if camelizedName.start_with?('set')
+          send_notification(camelizedName, *args)
+        else
+          call_rom(camelizedName, *args, &block)
+        end
       end
     end
 
@@ -45,6 +49,18 @@ module Runivedo
       @notifications = {}
       @mutex = Mutex.new
       @cond = ConditionVariable.new
+    end
+
+    def send_notification(name, *args)
+      @mutex.synchronize do
+        raise "remote object closed" unless @open
+        @connection.stream.send_message do |m|
+          m << @id
+          m << OPERATION_NOTIFY
+          m << name.to_s
+          args.each {|a| m << a}
+        end
+      end
     end
 
     def call_rom(name, *args)

@@ -16,8 +16,26 @@ describe Runivedo::RemoteObject do
     stream.sent_data.should == [2, 1, 1, 'bar', 23]
   end
 
+  it 'does rom calls with method missing' do
+    stream.callback = lambda {Thread.new{ro.send(:receive, MockMessage.new(2, 0, 0, 42))}}
+    ro.extend Runivedo::RemoteObject::MethodMissing
+    ro.foo_bar(23).should == 42
+    stream.sent_data.should == [2, 1, 0, "fooBar", 23]
+  end
+
   it 'receives notifications' do
     ro.should_receive(:notification).with("foo", 42)
     ro.send(:receive, MockMessage.new(3, "foo", 42))
+  end
+
+  it 'sends notifications' do
+    ro.send_notification(:foo, 42, "bar")
+    stream.sent_data.should == [2, 3, "foo", 42, "bar"]
+  end
+
+  it 'sends set_* as notification' do
+    ro.extend Runivedo::RemoteObject::MethodMissing
+    ro.set_foo 42
+    stream.sent_data.should == [2, 3, "setFoo", 42]
   end
 end
