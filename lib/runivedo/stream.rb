@@ -62,7 +62,6 @@ module Runivedo
             reason = e
           end
           if reason
-            puts "closing stream: #{reason}"
             @onclose.call(reason)
             break
           end
