@@ -1,7 +1,7 @@
 module Runivedo
   class Result < RemoteObject
     include Enumerable
-    RemoteObject.register_ro_class('result', self)
+    RemoteObject.register_ro_class('com.univedo.result', self)
 
     def initialize(*args)
       super(*args)
