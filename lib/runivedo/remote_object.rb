@@ -64,45 +64,47 @@ module Runivedo
     end
 
     def call_rom(name, *args)
-      @mutex.synchronize do
-        raise "remote object closed" unless @open
-        call_id = @call_id
-        @call_id += 1
-        @calls[call_id] = {success: nil}
-        @connection.stream.send_message do |m|
-          m << @id
-          m << OPERATION_CALL_ROM
-          m << call_id
-          m << name
-          args.each {|a| m << a}
-        end
-        @cond.wait(@mutex) while @calls[call_id][:success].nil?
-        success, message = @calls[call_id].values_at(:success, :value)
-        @calls.delete(call_id)
-        unless success
-          message.set_backtrace caller
-          raise message
-        end
-        status = message.read
-        case status
-        when 0
-          # If result is a remote object and we have a block pass it as parameter and close again
-          result = message.read
-          if result.is_a?(RemoteObject) && block_given?
-            begin
-              yield result
-            ensure
-              result.close
-            end
-            return nil
-          end
-          result
-        when 2
-          raise RunivedoSqlError.new(message.read)
-        else
-          raise "got message status #{status}" unless status == 0
-        end
+      @mutex.lock
+      raise "remote object closed" unless @open
+      call_id = @call_id
+      @call_id += 1
+      @calls[call_id] = {success: nil}
+      @connection.stream.send_message do |m|
+        m << @id
+        m << OPERATION_CALL_ROM
+        m << call_id
+        m << name
+        args.each {|a| m << a}
       end
+      @cond.wait(@mutex) while @calls[call_id][:success].nil?
+      success, message = @calls[call_id].values_at(:success, :value)
+      @calls.delete(call_id)
+      @mutex.unlock
+      unless success
+        message.set_backtrace caller
+        raise message
+      end
+      status = message.read
+      case status
+      when 0
+        # If result is a remote object and we have a block pass it as parameter and close again
+        result = message.read
+        if result.is_a?(RemoteObject) && block_given?
+          begin
+            yield result
+          ensure
+            result.close
+          end
+          return nil
+        end
+        result
+      when 2
+        raise RunivedoSqlError.new(message.read)
+      else
+        raise "got message status #{status}" unless status == 0
+      end
+    ensure
+      @mutex.unlock if @mutex.owned?
     end
 
     def on(notification_name, &block)
