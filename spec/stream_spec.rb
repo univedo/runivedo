@@ -132,6 +132,11 @@ describe Runivedo::Stream do
       message = Runivedo::Stream::Message.new("\xc7\x50".b + uuid.raw)
       message.read.should == uuid
     end
+
+    it 'receives records' do
+      message = Runivedo::Stream::Message.new("\xc8\x18\x2a".b)
+      message.read.should == 42
+    end
   end
 
   describe "sending and receiving" do

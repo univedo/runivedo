@@ -18,7 +18,7 @@ module Runivedo
     DECIMAL = 4
     REMOTEOBJECT = 6
     UUID = 7
-    SQL = 10
+    RECORD = 8
   end
 
   module CborSimple
@@ -88,6 +88,8 @@ module Runivedo
           Time.iso8601(read_impl)
         when CborTag::TIME
           Time.at(read_impl)
+        when CborTag::RECORD
+          read_impl
         else
           raise "Tag not supported"
         end
