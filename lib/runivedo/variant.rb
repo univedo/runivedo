@@ -173,7 +173,7 @@ module Runivedo
         s = obj.to_s.dup.force_encoding(Encoding::UTF_8)
         send_len(s.valid_encoding? ? CborMajor::TEXTSTRING : CborMajor::BYTESTRING, s.bytesize) + s.b
       when Time
-        send_tag(CborTag::DATETIME) + send_impl(obj.iso8601)
+        send_tag(CborTag::DATETIME) + send_impl(obj.iso8601(6))
       when Array
         send_len(CborMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash

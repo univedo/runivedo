@@ -59,7 +59,11 @@ describe Runivedo::Stream do
     it 'sends datetimes' do
       time = Time.iso8601("2013-03-21T20:04:00Z")
       message << time
-      message.buffer.should == "\xc0\x74\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30\x5a".b
+      message.buffer.should == "\xc0\x78\x1b\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30.000000\x5a".b
+      message.buffer = ""
+      time = Time.iso8601("2013-03-21T20:04:00.000001Z")
+      message << time
+      message.buffer.should == "\xc0\x78\x1b\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30.000001\x5a".b
     end
   end
 
@@ -120,6 +124,8 @@ describe Runivedo::Stream do
     it 'receives datetimes' do
       message = Runivedo::Stream::Message.new("\xc0\x74\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30\x5a".b)
       message.read.should == Time.iso8601("2013-03-21T20:04:00Z")
+      message = Runivedo::Stream::Message.new("\xc0\x78\x1b\x32\x30\x31\x33\x2d\x30\x33\x2d\x32\x31\x54\x32\x30\x3a\x30\x34\x3a\x30\x30.000001\x5a".b)
+      message.read.should == Time.iso8601("2013-03-21T20:04:00.000001Z")
     end
 
     it 'receives times' do
