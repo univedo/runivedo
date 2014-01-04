@@ -104,9 +104,9 @@ module Runivedo
         when CborSimple::FLOAT16
           raise "half precision float not supported"
         when CborSimple::FLOAT32
-          get_bytes(4, "f")
+          get_bytes(4, "g")
         when CborSimple::FLOAT64
-          get_bytes(8, "d")
+          get_bytes(8, "G")
         else
           raise "invalid simple"
         end
@@ -168,7 +168,7 @@ module Runivedo
           send_len(CborMajor::UINT, obj)
         end
       when Float
-        send_simple(CborSimple::FLOAT64) + [obj].pack("d")
+        send_simple(CborSimple::FLOAT64) + [obj].pack("G")
       when String, Symbol
         s = obj.to_s.dup.force_encoding(Encoding::UTF_8)
         send_len(s.valid_encoding? ? CborMajor::TEXTSTRING : CborMajor::BYTESTRING, s.bytesize) + s.b

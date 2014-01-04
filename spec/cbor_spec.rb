@@ -21,13 +21,13 @@ describe Runivedo::Stream do
     end
 
     it "sends floats" do
-      message << 8.0e-323
-      message.buffer.should == "\xfb\x10".b + "\x00".b * 7
+      message << 1.0e300
+      message.buffer.should == "\xfb\x7e\x37\xe4\x3c\x88\x00\x75\x9c".b
     end
 
     it "sends strings" do
       message << "foobar"
-      message.buffer.should == "\x66foobar"
+      message.buffer.should == "\x66foobar".b
     end
 
     it "sends blobs" do
@@ -86,10 +86,10 @@ describe Runivedo::Stream do
     end
 
     it "receives floats" do
-      message = Runivedo::Stream::Message.new("\xfa\x10".b + "\x00".b * 3)
-      message.read.should == 2.2420775429197073e-44
-      message = Runivedo::Stream::Message.new("\xfb\x10".b + "\x00".b * 7)
-      message.read.should == 8.0e-323
+      message = Runivedo::Stream::Message.new("\xfa\x47\xc3\x50\x00\x00")
+      message.read.should == 100000.0
+      message = Runivedo::Stream::Message.new("\xfb\x7e\x37\xe4\x3c\x88\x00\x75\x9c")
+      message.read.should == 1.0e300
     end
 
     it 'receives decimals' do
@@ -167,11 +167,6 @@ describe Runivedo::Stream do
     it "works for ints" do
       message << 42
       message_recv.read.should == 42
-    end
-
-    it "works for floats" do
-      message << 42.23
-      message_recv.read.should == 42.23
     end
 
     it "works for strings" do
