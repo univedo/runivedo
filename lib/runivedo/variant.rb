@@ -13,11 +13,11 @@ module Runivedo
   end
 
   module VariantTag
+    DATETIME = 0
+    TIME = 1
     DECIMAL = 4
     REMOTEOBJECT = 6
     UUID = 7
-    TIME = 8
-    DATETIME = 9
     SQL = 10
   end
 
@@ -86,8 +86,10 @@ module Runivedo
           RemoteObject.create_ro(thread_id: arr[0], connection: @connection, name: arr[1])
         when VariantTag::UUID
           UUIDTools::UUID.parse_raw(read_impl)
-        when VariantTag::TIME, VariantTag::DATETIME
-          Time.at(read_impl.to_r / 1000000)
+        when VariantTag::DATETIME
+          Time.iso8601(read_impl)
+        when VariantTag::TIME
+          Time.at(read_impl)
         else
           raise "Tag not supported"
         end
@@ -171,7 +173,7 @@ module Runivedo
         s = obj.to_s.dup.force_encoding(Encoding::UTF_8)
         send_len(s.valid_encoding? ? VariantMajor::TEXTSTRING : VariantMajor::BYTESTRING, s.bytesize) + s.b
       when Time
-        "\xc8\x1b".b + [(obj.to_r*1000000).to_i].pack("Q>")
+        send_tag(VariantTag::DATETIME) + send_impl(obj.iso8601)
       when Array
         send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash
