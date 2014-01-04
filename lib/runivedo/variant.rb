@@ -1,7 +1,7 @@
 require "bigdecimal"
 
 module Runivedo
-  module VariantMajor
+  module CborMajor
     UINT = 0
     NEGINT = 1
     BYTESTRING = 2
@@ -12,7 +12,7 @@ module Runivedo
     FLOAT = 7
   end
 
-  module VariantTag
+  module CborTag
     DATETIME = 0
     TIME = 1
     DECIMAL = 4
@@ -21,7 +21,7 @@ module Runivedo
     SQL = 10
   end
 
-  module VariantSimple
+  module CborSimple
     FALSE = 20
     TRUE = 21
     NULL = 22
@@ -29,8 +29,6 @@ module Runivedo
     FLOAT32 = 26
     FLOAT64 = 27
   end
-
-
 
   module Variant
     private
@@ -55,57 +53,57 @@ module Runivedo
       major = (typeInt >> 5)
 
       case major
-      when VariantMajor::UINT
+      when CborMajor::UINT
         get_len(typeInt)
-      when VariantMajor::NEGINT
+      when CborMajor::NEGINT
         -get_len(typeInt)-1
-      when VariantMajor::BYTESTRING
+      when CborMajor::BYTESTRING
         count = get_len(typeInt)
         get_bytes(count, "a*")
-      when VariantMajor::TEXTSTRING
+      when CborMajor::TEXTSTRING
         count = get_len(typeInt)
         s = get_bytes(count, "a*").force_encoding(Encoding::UTF_8)
         raise "received non-utf8 string when expecting utf8" unless s.valid_encoding?
         s
-      when VariantMajor::ARRAY
+      when CborMajor::ARRAY
         count = get_len(typeInt)
         count.times.map { read_impl }
-      when VariantMajor::MAP
+      when CborMajor::MAP
         count = get_len(typeInt)
         Hash[count.times.map { [read_impl, read_impl] }]
-      when VariantMajor::TAG
+      when CborMajor::TAG
         tag = get_len(typeInt)
         case tag
-        when VariantTag::DECIMAL
+        when CborTag::DECIMAL
           arr = read_impl
           raise "inconsistent type" if arr.length != 2
           BigDecimal.new(arr[0]) * (10 ** arr[1])
-        when VariantTag::REMOTEOBJECT
+        when CborTag::REMOTEOBJECT
           arr = read_impl
           raise "inconsistent type" if arr.length != 2
           RemoteObject.create_ro(thread_id: arr[0], connection: @connection, name: arr[1])
-        when VariantTag::UUID
+        when CborTag::UUID
           UUIDTools::UUID.parse_raw(read_impl)
-        when VariantTag::DATETIME
+        when CborTag::DATETIME
           Time.iso8601(read_impl)
-        when VariantTag::TIME
+        when CborTag::TIME
           Time.at(read_impl)
         else
           raise "Tag not supported"
         end
-      when VariantMajor::FLOAT
+      when CborMajor::FLOAT
         case typeInt & 0x1F
-        when VariantSimple::FALSE
+        when CborSimple::FALSE
           false
-        when VariantSimple::TRUE
+        when CborSimple::TRUE
           true
-        when VariantSimple::NULL
+        when CborSimple::NULL
           nil
-        when VariantSimple::FLOAT16
+        when CborSimple::FLOAT16
           raise "half precision float not supported"
-        when VariantSimple::FLOAT32
+        when CborSimple::FLOAT32
           get_bytes(4, "f")
-        when VariantSimple::FLOAT64
+        when CborSimple::FLOAT64
           get_bytes(8, "d")
         else
           raise "invalid simple"
@@ -116,11 +114,11 @@ module Runivedo
     end
 
     def send_simple(val)
-      [(VariantMajor::FLOAT << 5) | val].pack("C")
+      [(CborMajor::FLOAT << 5) | val].pack("C")
     end
 
     def send_tag(tag)
-      [(VariantMajor::TAG << 5) | tag].pack("C")
+      [(CborMajor::TAG << 5) | tag].pack("C")
     end
 
     def send_len(major, len)
@@ -141,43 +139,43 @@ module Runivedo
     def send_impl(obj)
       case obj
       when nil
-        send_simple(VariantSimple::NULL)
+        send_simple(CborSimple::NULL)
       when TrueClass
-        send_simple(VariantSimple::TRUE)
+        send_simple(CborSimple::TRUE)
       when FalseClass
-        send_simple(VariantSimple::FALSE)
+        send_simple(CborSimple::FALSE)
       when BigDecimal
         sign, significant_digits, base, exponent = obj.split
         val = significant_digits.to_i(base)
         raise "unexpected decimal format" if val < 0
         raise "unexpected decimal format" if exponent < 0
-        strExp = exponent == 0 ? "\x00".b : send_len(VariantMajor::NEGINT, exponent-1)
+        strExp = exponent == 0 ? "\x00".b : send_len(CborMajor::NEGINT, exponent-1)
         case sign
         when -1
           raise "unexpected decimal format" if val == 0
-          "\xc4\x82".b + send_len(VariantMajor::NEGINT, val-1) + strExp.b
+          "\xc4\x82".b + send_len(CborMajor::NEGINT, val-1) + strExp.b
         when 1
-          "\xc4\x82".b + send_len(VariantMajor::UINT, val) + strExp.b
+          "\xc4\x82".b + send_len(CborMajor::UINT, val) + strExp.b
         else
          raise "decimal not a number"
        end
       when Fixnum, Bignum
         if obj < 0
-          send_len(VariantMajor::NEGINT, -obj-1)
+          send_len(CborMajor::NEGINT, -obj-1)
         else
-          send_len(VariantMajor::UINT, obj)
+          send_len(CborMajor::UINT, obj)
         end
       when Float
-        send_simple(VariantSimple::FLOAT64) + [obj].pack("d")
+        send_simple(CborSimple::FLOAT64) + [obj].pack("d")
       when String, Symbol
         s = obj.to_s.dup.force_encoding(Encoding::UTF_8)
-        send_len(s.valid_encoding? ? VariantMajor::TEXTSTRING : VariantMajor::BYTESTRING, s.bytesize) + s.b
+        send_len(s.valid_encoding? ? CborMajor::TEXTSTRING : CborMajor::BYTESTRING, s.bytesize) + s.b
       when Time
-        send_tag(VariantTag::DATETIME) + send_impl(obj.iso8601)
+        send_tag(CborTag::DATETIME) + send_impl(obj.iso8601)
       when Array
-        send_len(VariantMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
+        send_len(CborMajor::ARRAY, obj.count) + obj.map{|e| send_impl(e)}.join
       when Hash
-        send_len(VariantMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k.to_s) + send_impl(v)}.join
+        send_len(CborMajor::MAP, obj.count) + obj.map{|k, v| send_impl(k.to_s) + send_impl(v)}.join
       when UUIDTools::UUID
         "\xc7\x50".b + obj.raw.b
       else
