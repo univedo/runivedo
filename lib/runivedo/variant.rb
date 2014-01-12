@@ -76,11 +76,11 @@ module Runivedo
         case tag
         when CborTag::DECIMAL
           arr = read_impl
-          raise "inconsistent type" if arr.length != 2
-          BigDecimal.new(arr[0]) * (10 ** arr[1])
+          raise "invalid decimal" if arr.length != 2
+          BigDecimal.new(arr[1]) * (BigDecimal.new(10) ** arr[0])
         when CborTag::REMOTEOBJECT
           arr = read_impl
-          raise "inconsistent type" if arr.length != 2
+          raise "invalid remoteobject" if arr.length != 2
           RemoteObject.create_ro(thread_id: arr[0], connection: @connection, name: arr[1])
         when CborTag::UUID
           UUIDTools::UUID.parse_raw(read_impl)
@@ -133,8 +133,10 @@ module Runivedo
         [typeInt | 25, len].pack("CS>")
       elsif len < 0x100000000
         [typeInt | 26, len].pack("CL>")
-      else
+      elsif len < 0x10000000000000000
         [typeInt | 27, len].pack("CQ>")
+      else
+        raise "can only send 64bit integers"
       end
     end
 
@@ -148,19 +150,9 @@ module Runivedo
         send_simple(CborSimple::FALSE)
       when BigDecimal
         sign, significant_digits, base, exponent = obj.split
-        val = significant_digits.to_i(base)
-        raise "unexpected decimal format" if val < 0
-        raise "unexpected decimal format" if exponent < 0
-        strExp = exponent == 0 ? "\x00".b : send_len(CborMajor::NEGINT, exponent-1)
-        case sign
-        when -1
-          raise "unexpected decimal format" if val == 0
-          "\xc4\x82".b + send_len(CborMajor::NEGINT, val-1) + strExp.b
-        when 1
-          "\xc4\x82".b + send_len(CborMajor::UINT, val) + strExp.b
-        else
-         raise "decimal not a number"
-       end
+        raise "NaN while sending BigDecimal" if sign == 0
+        val = sign * significant_digits.to_i(base)
+        send_tag(CborTag::DECIMAL) + send_impl([exponent - significant_digits.size, val])
       when Fixnum, Bignum
         if obj < 0
           send_len(CborMajor::NEGINT, -obj-1)

@@ -25,6 +25,11 @@ describe Runivedo::Stream do
       message.buffer.should == "\xfb\x7e\x37\xe4\x3c\x88\x00\x75\x9c".b
     end
 
+    it 'sends decimals' do
+      message << BigDecimal.new("273.15")
+      message.buffer.should == "\xc4\x82\x21\x19\x6a\xb3".b
+    end
+
     it "sends strings" do
       message << "foobar"
       message.buffer.should == "\x66foobar".b
@@ -93,8 +98,8 @@ describe Runivedo::Stream do
     end
 
     it 'receives decimals' do
-      message = Runivedo::Stream::Message.new("\xc4\x82\x18\x2a\x20".b)
-      message.read.should == BigDecimal.new("4.2")
+      message = Runivedo::Stream::Message.new("\xc4\x82\x21\x19\x6a\xb3".b)
+      message.read.should == BigDecimal.new("273.15")
     end
 
     it "receives strings" do
@@ -194,6 +199,13 @@ describe Runivedo::Stream do
       dec = BigDecimal.new("4.3")
       message << dec
       message_recv.read.to_s('F').should == "4.3"
+    end
+
+    it "works for long decimal" do
+      pi = "3.141592653589793238"
+      dec = BigDecimal.new(pi)
+      message << dec
+      message_recv.read.to_s('F').should == pi
     end
 
     it "works for negative decimal" do
