@@ -127,7 +127,6 @@ module Runivedo
     private
 
     def notification(name, *args)
-      puts "notification: #{name}"
       if @notifications.has_key?(name)
         @notifications[name].call(*args)
       else
