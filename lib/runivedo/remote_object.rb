@@ -58,7 +58,7 @@ module Runivedo
           m << @id
           m << OPERATION_NOTIFY
           m << name.to_s
-          args.each {|a| m << a}
+          m << args
         end
       end
     end
@@ -73,8 +73,7 @@ module Runivedo
         m << @id
         m << OPERATION_CALL_ROM
         m << call_id
-        m << name
-        args.each {|a| m << a}
+        m << args
       end
       @cond.wait(@mutex) while @calls[call_id][:success].nil?
       success, message = @calls[call_id].values_at(:success, :value)
@@ -147,8 +146,7 @@ module Runivedo
           @cond.broadcast
         when OPERATION_NOTIFY
           name = message.read
-          args = []
-          args << message.read while message.has_data?
+          args = message.read
           notification(name, *args)
         else
           raise "unknown opcode #{opcode}"
