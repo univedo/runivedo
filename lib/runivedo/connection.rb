@@ -22,8 +22,8 @@ module Runivedo
       @session_remote.call_rom('getPerspective', name, &block)
     end
 
-    def set_perspective(name)
-      @session_remote.call_rom('setPerspective', name)
+    def apply_uts(name)
+      @session_remote.call_rom('applyUts', name)
     end
 
     def close
