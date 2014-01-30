@@ -73,6 +73,7 @@ module Runivedo
         m << @id
         m << OPERATION_CALL_ROM
         m << call_id
+        m << name
         m << args
       end
       @cond.wait(@mutex) while @calls[call_id][:success].nil?
