@@ -4,6 +4,7 @@ $: << File.dirname(__FILE__) + "/../lib"
 
 require 'runivedo'
 require 'rainbow'
+require 'rainbow/ext/string'
 require 'readline'
 require 'readline/history/restore'
 require 'terminal-table'
