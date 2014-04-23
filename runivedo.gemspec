@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "rfc-ws-client", '~> 1.2'
-  spec.add_dependency "term-ansicolor"
+  spec.add_dependency "rainbow"
   spec.add_dependency "readline-history-restore"
   spec.add_dependency "terminal-table"
   spec.add_dependency "uuidtools"
