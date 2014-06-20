@@ -1,30 +1,9 @@
 module Runivedo
   class RemoteObject
-    include Protocol
-
-    # Class stuff
-
-    @@ro_classes = {}
-
-    def self.register_ro_class(name, klass)
-      @@ro_classes[name] = klass
-    end
-
-    def self.unregister_ro_class(name)
-      @@ro_classes.delete(name)
-    end
-
-    def self.create_ro(name: name, connection: connection, thread_id: thread_id)
-      if @@ro_classes.has_key?(name)
-        @@ro_classes[name].new(connection: connection, id: thread_id)
-      else
-        ro = RemoteObject.new(connection: connection, id: thread_id)
-        ro.extend(MethodMissing)
-        ro
-      end
-    end
-
-    # Instance stuff
+    OPERATION_CALL_ROM = 1
+    OPERATION_ANSWER_CALL = 2
+    OPERATION_NOTIFY = 3
+    OPERATION_DELETE = 4
 
     module MethodMissing
       def method_missing(name, *args, &block)
@@ -37,132 +16,103 @@ module Runivedo
       end
     end
 
-    attr_accessor :id
-
-    def initialize(connection: connection, id: id)
-      @connection = connection
-      @connection.send(:register_ro_instance, id, self)
+    def initialize(session, id)
+      @session = session
       @open = true
       @id = id
       @call_id = 0
       @calls = {}
       @notifications = {}
       @mutex = Mutex.new
-      @cond = ConditionVariable.new
     end
 
     def send_notification(name, *args)
       @mutex.synchronize do
-        raise "remote object closed" unless @open
-        @connection.stream.send_message do |m|
-          m << @id
-          m << OPERATION_NOTIFY
-          m << name.to_s
-          m << args
-        end
+        check_open
+        @session.send :send_message, [@id, OPERATION_NOTIFY, name.to_s, args]
       end
     end
 
     def call_rom(name, *args)
-      @mutex.lock
-      raise "remote object closed" unless @open
-      call_id = @call_id
-      @call_id += 1
-      @calls[call_id] = {success: nil}
-      @connection.stream.send_message do |m|
-        m << @id
-        m << OPERATION_CALL_ROM
-        m << call_id
-        m << name
-        m << args
+      call_result = nil
+      @mutex.synchronize do
+        check_open
+        call_result = Future.new
+        @calls[@call_id] = call_result
+        @session.send :send_message, [@id, OPERATION_CALL_ROM, @call_id, name, args]
+        @call_id += 1
       end
-      @cond.wait(@mutex) while @calls[call_id][:success].nil?
-      success, message = @calls[call_id].values_at(:success, :value)
-      @calls.delete(call_id)
-      @mutex.unlock
-      unless success
-        message.set_backtrace caller
-        raise message
-      end
-      status = message.read
-      case status
-      when 0
-        # If result is a remote object and we have a block pass it as parameter and close again
-        result = message.read
-        if result.is_a?(RemoteObject) && block_given?
-          begin
-            yield result
-          ensure
-            result.close
-          end
-          return nil
+      result = call_result.get
+      if result.is_a?(RemoteObject) && block_given?
+        begin
+          yield result
+        ensure
+          result.close
         end
-        result
-      when 2
-        raise RunivedoSqlError.new(message.read)
       else
-        raise "got message status #{status}" unless status == 0
+        result
       end
-    ensure
-      @mutex.unlock if @mutex.owned?
     end
 
     def on(notification_name, &block)
       @notifications[notification_name.to_s] = block
     end
 
-    def close
-      @connection.stream.send_message do |m|
-        m << @id
-        m << OPERATION_DELETE
-      end
-      @connection.send(:close_ro, @id, "closed")
-    rescue
+    def closed?
+      !@open
     end
 
-    def open?
-      @open
+    def close
+      @session.send :delete_ro, @id
+      onclose(Runivedo::ConnectionError.new("remote object closed"))
+      @session.send :send_message, [@id, OPERATION_DELETE]
     end
 
     private
 
-    def notification(name, *args)
-      if @notifications.has_key?(name)
-        @notifications[name].call(*args)
-      else
-        puts "unknown notification #{name}"
-      end
-    end
-
-    def receive(message)
-      @mutex.synchronize do
-        return if @closed
-        opcode = message.read
-        case opcode
-        when OPERATION_ANSWER_CALL
-          call_id = message.read
-          raise "unknown call id" unless @calls.has_key?(call_id)
-          @calls[call_id][:success] = true
-          @calls[call_id][:value] = message
-          @cond.broadcast
-        when OPERATION_NOTIFY
-          name = message.read
-          args = message.read
-          notification(name, *args)
-        else
-          raise "unknown opcode #{opcode}"
-        end
-      end
+    def check_open
+      raise Runivedo::ConnectionError.new("remote object closed") unless @open
     end
 
     def onclose(reason)
       @mutex.synchronize do
+        return unless @open
         @open = false
-        @calls.each do |id, call|
-          call[:success] = false
-          call[:value] = reason
+        @calls.each_value do |c|
+          c.fail(reason)
         end
-        @cond.broadcast
+      end
+    end
+
+    def receive(data)
+      opcode = data.shift
+      case opcode
+      when OPERATION_ANSWER_CALL
+        call_id = data.shift
+        future = @calls[call_id]
+        raise Runivedo::ConnectionError.new("unknown call id #{call_id}") unless future
+        @calls.delete(call_id)
+        status = data.shift
+        case status
+        when 0
+          result = data.shift
+          future.complete(result)
+        when 2
+          error = data.shift
+          future.fail Runivedo::SqlError.new(error)
+        else
+          raise Runivedo::ConnectionError.new("unknown status #{status}")
+        end
+      when OPERATION_NOTIFY
+        name = data.shift
+        args = data.shift
+        if block = @notifications[name]
+          block.call(*args)
+        else
+          raise Runivedo::ConnectionError.new("unknown notification #{name}")
+        end
+      else
+        raise Runivedo::ConnectionError.new("received invalid opcode #{opcode}")
       end
     end
   end
