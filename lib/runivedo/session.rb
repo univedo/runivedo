@@ -41,6 +41,10 @@ module Runivedo
       @session_remote.apply_uts uts
     end
 
+    def get_server_version
+      @session_remote.get_server_version
+    end
+
     def close
       @ws.close
       close_ros(Runivedo::ConnectionError.new("connection closed"))
