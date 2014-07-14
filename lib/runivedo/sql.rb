@@ -6,11 +6,17 @@ module Runivedo
     def initialize(*args)
       super(*args)
       @column_names = Future.new
+      @column_types = Future.new
       on('setColumnNames') {|cols| @column_names.complete(cols)}
+      on('setColumnTypes') {|types| @column_types.complete(types)}
     end
 
     def column_names
       @column_names.get
+    end
+
+    def column_types
+      @column_types.get
     end
 
     def execute(binds = {}, &block)
