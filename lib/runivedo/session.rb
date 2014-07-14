@@ -2,9 +2,9 @@ require "rfc-ws-client"
 require "uuidtools"
 require "cbor"
 
-# Record Id Tag
-# https://github.com/lucas-clemente/cbor-specs/blob/master/db_id.md
-CBOR.register_tag(38) {|raw| raw}
+# Id Tag
+# https://github.com/lucas-clemente/cbor-specs/blob/master/id.md
+CBOR.register_tag(39) {|raw| raw}
 
 module Runivedo
   @@ro_classes = {}
