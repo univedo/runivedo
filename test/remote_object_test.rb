@@ -40,7 +40,7 @@ class RemoteObjectTest < MiniTest::Test
     assert_raises Runivedo::SqlError do
       session = MockSession.new
       ro = Runivedo::RemoteObject.new(session, 23)
-      session.onmsg = -> {ro.send :receive, [2, 0, 2, "boom"]}
+      session.onmsg = -> {ro.send :receive, [2, 0, 1, "boom"]}
       assert_equal 42, ro.call_rom("foo", 1, "2", 3)
       assert_equal [23, 1, 0, "foo", [1, "2", 3]], session.msg
     end

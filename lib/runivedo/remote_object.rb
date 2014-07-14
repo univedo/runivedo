@@ -97,7 +97,7 @@ module Runivedo
         when 0
           result = data.shift
           future.complete(result)
-        when 2
+        when 1
           error = data.shift
           future.fail Runivedo::SqlError.new(error)
         else
