@@ -35,7 +35,7 @@ module Runivedo
       @n_affected = Future.new
 
       self.on('setError') do |msg|
-        err = Runivedo::RunivedoSqlError.new(msg)
+        err = Runivedo::SqlError.new(msg)
         @rows << err
         @record_id.fail(err)
         @n_affected.fail(err)
