@@ -23,6 +23,9 @@ module Runivedo
     def initialize(url, args = {})
       @remote_objects = {}
       @ws = RfcWebSocket::WebSocket.new(url)
+      # Use TCP_NODELAY, since usually SQL queries are pretty small packets.
+      @ws.instance_variable_get(:@socket).setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+
       Thread.new { handle_ws }
       @urologin = RemoteObject.new(self, 0)
       @remote_objects[0] = @urologin
