@@ -1,12 +1,13 @@
 require "test_helper"
 
-class SessionTest < MiniTest::Test
+class ConnectionTest < MiniTest::Test
   def setup
-    @session = Runivedo::Session.new TEST_URL, TEST_AUTH
+    @connection = Runivedo::Connection.new TEST_URL
+    @session = @connection.get_session TEST_BUCKET, TEST_AUTH
   end
 
   def teardown
-    @session.close unless @session.closed?
+    @connection.close unless @connection.closed?
   end
 
   def ping(v)
@@ -14,7 +15,7 @@ class SessionTest < MiniTest::Test
   end
 
   def test_connect
-    assert !@session.closed?
+    assert !@connection.closed?
   end
 
   def test_pings_null
@@ -30,12 +31,12 @@ class SessionTest < MiniTest::Test
   end
 
   def test_close
-    @session.close
-    assert @session.closed?
+    @connection.close
+    assert @connection.closed?
   end
 
   def test_error_closed
-    @session.close
+    @connection.close
     assert_raises Runivedo::ConnectionError do
       @session.ping("foo")
     end

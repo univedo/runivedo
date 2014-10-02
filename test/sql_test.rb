@@ -2,12 +2,14 @@ require "test_helper"
 
 class SqlTest < MiniTest::Test
   def setup
-    @session = Runivedo::Session.new TEST_URL, TEST_AUTH
+    @connection = Runivedo::Connection.new TEST_URL
+    @session = @connection.get_session TEST_BUCKET, TEST_AUTH
+    @session.apply_uts IO.read("Test Perspective.xml")
     @perspective = @session.get_perspective "cefb4ed2-4ce3-4825-8550-b68a3c142f0a"
   end
 
   def teardown
-    @session.close
+    @connection.close
   end
 
   def test_connection
