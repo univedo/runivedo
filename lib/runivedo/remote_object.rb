@@ -16,8 +16,8 @@ module Runivedo
       end
     end
 
-    def initialize(session, id)
-      @session = session
+    def initialize(connection, id)
+      @connection = connection
       @open = true
       @id = id
       @call_id = 0
@@ -29,7 +29,7 @@ module Runivedo
     def send_notification(name, *args)
       @mutex.synchronize do
         check_open
-        @session.send :send_message, [@id, OPERATION_NOTIFY, name.to_s, args]
+        @connection.send :send_message, [@id, OPERATION_NOTIFY, name.to_s, args]
       end
     end
 
@@ -39,7 +39,7 @@ module Runivedo
         check_open
         call_result = Future.new
         @calls[@call_id] = call_result
-        @session.send :send_message, [@id, OPERATION_CALL_ROM, @call_id, name, args]
+        @connection.send :send_message, [@id, OPERATION_CALL_ROM, @call_id, name, args]
         @call_id += 1
       end
       result = call_result.get
@@ -63,9 +63,9 @@ module Runivedo
     end
 
     def close
-      @session.send :delete_ro, @id
+      @connection.send :delete_ro, @id
       onclose(Runivedo::ConnectionError.new("remote object closed"))
-      @session.send :send_message, [@id, OPERATION_DELETE]
+      @connection.send :send_message, [@id, OPERATION_DELETE]
     end
 
     private

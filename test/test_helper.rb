@@ -4,5 +4,6 @@ require "minitest/autorun"
 require "minitest/emoji"
 require "runivedo"
 
-TEST_URL = "ws://vagrant/f8018f09-fb75-4d3d-8e11-44b2dc796130"
-TEST_AUTH = {username: "marvin"}
+TEST_URL = "ws://localhost:9011/"
+TEST_BUCKET = "cbd79ca3-1dd4-4ddf-a964-618b593d5fdb"
+TEST_AUTH = {}

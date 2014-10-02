@@ -17,10 +17,10 @@ module Runivedo
     @@ro_classes
   end
 
-  class Session
+  class Connection
     attr_reader :error
 
-    def initialize(url, args = {})
+    def initialize(url)
       @remote_objects = {}
       @ws = RfcWebSocket::WebSocket.new(url)
       # Use TCP_NODELAY, since usually SQL queries are pretty small packets.
@@ -29,23 +29,10 @@ module Runivedo
       Thread.new { handle_ws }
       @urologin = RemoteObject.new(self, 0)
       @remote_objects[0] = @urologin
-      @session_remote = @urologin.call_rom('getSession', args)
     end
 
-    def ping(v)
-      @session_remote.ping(v)
-    end
-
-    def get_perspective(name, &block)
-      @session_remote.get_perspective name, &block
-    end
-
-    def apply_uts(uts)
-      @session_remote.apply_uts uts
-    end
-
-    def get_server_version
-      @session_remote.get_server_version
+    def get_session(bucket, auth)
+      @urologin.call_rom('getSession', bucket, auth)
     end
 
     def close
@@ -68,7 +55,6 @@ module Runivedo
         # Read message to an array
         io = StringIO.new(msg)
         data = []
-        session = self
         data << CBOR.load(io, 27 => method(:receive_ro)) while !io.eof?
 
         # Find remote object
