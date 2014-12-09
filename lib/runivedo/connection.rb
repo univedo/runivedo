@@ -22,7 +22,7 @@ module Runivedo
 
     def initialize(url)
       @remote_objects = {}
-      @ws = RfcWebSocket::WebSocket.new(url)
+      @ws = RfcWebSocket::WebSocket.new(url + "/v1")
       # Use TCP_NODELAY, since usually SQL queries are pretty small packets.
       @ws.instance_variable_get(:@socket).setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 
