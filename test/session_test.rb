@@ -28,6 +28,7 @@ class ConnectionTest < MiniTest::Test
     ping "foobar"
     ping [1, 2]
     ping Time.now
+    ping UUIDTools::UUID.random_create
   end
 
   def test_close
